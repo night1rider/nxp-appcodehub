@@ -50,7 +50,6 @@
 #define LOCAL_DEBUG 0		//Use for wolfSSL's internal Debugging
 
 
-
 /* Use DHCP auto ip assignment or static assignment */
 #undef	DHCP_ON
 #define DHCP_ON 1 	// Set to true (1) if you want auto assignment ip, set false (0) for staticly define.
@@ -79,33 +78,8 @@
     #define TLS_METHOD wolfTLSv1_3_server_method()
 #endif
 
-/* 1000 msec = 1 sec */
-#define SLEEP_TIME_MS   1000
-/* The devicetree node identifier for the "led0" alias. */
-#define LED0_NODE DT_ALIAS(led0)
 
-/* Password attempts */
-#define MAX_PASSWD_RETRY 3
-
-#define EXAMPLE_BUFFER_SZ 4096
-#define EXAMPLE_KEYLOAD_BUFFER_SZ 1200
-
-
-
-/* Program Defines End		*/
-
-
-/* Global Variables/Structs Start 	*/
-
-//static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(LED0_NODE, gpios);
-
-/* Gloabl Variables/Starts End 		*/
-
-
-/* */
-
-
-
+/* Set up the network using the zephyr network stack */
 int startNetwork(){
 
 	struct net_if *iface = net_if_get_default();
@@ -156,7 +130,7 @@ int startNetwork(){
 
 }
 
-
+/* Initialize Server for a client connection */
 int startServer(void)
 {
     int                sockfd = SOCKET_INVALID;
