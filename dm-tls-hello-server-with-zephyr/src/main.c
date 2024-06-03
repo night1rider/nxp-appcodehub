@@ -20,9 +20,9 @@
  */
 
 /* wolfSSL Includes Start	*/
-#include "user_settings.h" 		//For wolfssl zephyr configuration (Bunch of Defines)
-#include <wolfssl/ssl.h>		//Basic functionality for TLS
-#include <wolfssl/certs_test.h> //Needed for Cert Buffers
+#include "user_settings.h" 		/* For wolfssl zephyr configuration */
+#include <wolfssl/ssl.h>		/* Basic functionality for TLS */
+#include <wolfssl/certs_test.h> /* Needed for Cert Buffers */
 #include <wolfssl/wolfcrypt/hash.h>
 /* wolfSSL Includes End		*/
 
@@ -41,30 +41,32 @@
 #include <zephyr/net/net_mgmt.h>
 #include <zephyr/net/net_config.h>
 #include <zephyr/net/net_ip.h>
-/* Zephyr Includes End 		*/
+/* Zephyr Includes End 	*/
 
-/* Program Defines Start 	*/
+/* Program Defines Start */
 
-#define DEFAULT_PORT 11111 	//Define's the port we want to use for the network
+#define DEFAULT_PORT 11111 	/* Define the port we want to use for the network */
 
-#define LOCAL_DEBUG 0		//Use for wolfSSL's internal Debugging
+#define LOCAL_DEBUG 0		/* Use for wolfSSL's internal Debugging */
 
 
 /* Use DHCP auto ip assignment or static assignment */
 #undef	DHCP_ON
-#define DHCP_ON 1 	// Set to true (1) if you want auto assignment ip, set false (0) for staticly define.
-					// Make sure to avoid IP conflicts on the network you assign this to, check the defaults before using.
-					// If unsure leave DHCP_ON set to 1
+#define DHCP_ON 1 	/* Set to true (1) if you want auto assignment ip, */ 
+                    /* set false (0) for staticly define. */
+					/* Make sure to avoid IP conflicts on the network you */
+                    /* assign this to, check the defaults before using. */
+					/* If unsure leave DHCP_ON set to 1 */
  
 #if DHCP_ON == 0
-	//TODO Setup static defines for ip
 /* Define Static IP, Gateway, and Netmask */
 	#define STATIC_IPV4_ADDR  "192.168.1.70"
 	#define STATIC_IPV4_GATEWAY "192.168.1.1"
 	#define STATIC_IPV4_NETMASK "255.255.255.0"
 #endif
 
-/* Set the TLS Version Currently only 2 or 3 is avaliable for this application, defaults to TLSv3 */
+/* Set the TLS Version Currently only 2 or 3 is avaliable for this */
+/* application, defaults to TLSv3 */
 #undef TLS_VERSION
 #define TLS_VERSION 3
 
@@ -104,7 +106,8 @@ int startNetwork(){
 	#if DHCP_ON == 1
     	printf("\nStarting DHCP to obtain IP address\n");
     	net_dhcpv4_start(iface);
-    	(void)net_mgmt_event_wait_on_iface(iface, NET_EVENT_IPV4_DHCP_BOUND, NULL, NULL, NULL, K_FOREVER);
+    	(void)net_mgmt_event_wait_on_iface(iface, NET_EVENT_IPV4_DHCP_BOUND, \
+                                            NULL, NULL, NULL, K_FOREVER);
 	#elif DHCP_ON == 0
 		/* Static IP Configuration */
 		if (net_addr_pton(AF_INET, STATIC_IPV4_ADDR, &addr) < 0 ||
@@ -124,7 +127,9 @@ int startNetwork(){
 
 
 	/* Display IP address that was assigned when done */
-	printf("IP Address is: %s", net_addr_ntop(AF_INET, &iface->config.ip.ipv4->unicast[0].ipv4.address.in_addr, buf, sizeof(buf)));
+	printf("IP Address is: %s", net_addr_ntop(AF_INET, \
+                    &iface->config.ip.ipv4->unicast[0].ipv4.address.in_addr, \
+                    buf, sizeof(buf)));
 	
 	return 0;
 
