@@ -132,7 +132,7 @@ echo         "Unix Makefiles",
 echo         "MinGW Makefiles"
 echo     ],
 echo     "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
-echo     "cmake.sourceDirectory": "\${workspaceFolder}"
+echo     "cmake.sourceDirectory": "${workspaceFolder}"
 echo }
 )
 echo settings.json created.
