@@ -85,7 +85,7 @@ create_launch_json() {
         "mcuxStopAtSymbol": "main",
         "mcuxSerialNumber": "",
         "mcuxAttach": "false",
-        "mcuxRemoteProbeType": ""
+        "mcuxRemoteProbeType": "",
       },
       "logging": {
         "engineLogging": false
