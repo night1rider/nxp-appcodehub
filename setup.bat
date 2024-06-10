@@ -7,7 +7,7 @@ if "%~1"=="" (
 )
 
 set "subfolder=%~1"
-set "baseDir=C:\Users\Backm\Documents\VS-Code\nxp-appcodehub"
+set "baseDir=%~dp0"
 set "targetDir=%baseDir%\%subfolder%\.vscode"
 
 if not exist "%baseDir%\%subfolder%\" (
@@ -72,7 +72,7 @@ echo         {
 echo             "type": "cppdbg",
 echo             "name": "Debug project configuration",
 echo             "request": "launch",
-echo             "cwd": "\${workspaceRoot}",
+echo             "cwd": "${workspaceRoot}",
 echo             "MIMode": "gdb",
 echo             "setupCommands": [
 echo                 {"text": "set remotetimeout 600"},
