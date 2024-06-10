@@ -1,6 +1,13 @@
 # NXP Application Code Hub
-[<img src="https://mcuxpresso.nxp.com/static/icon/nxp-logo-color.svg" width="100"/>](https://www.nxp.com)
-[<img src="Images/wolfssl_logo_300px.png" width="100"/>](https://www.wolfssl.com/)
+
+<div style="display: flex; justify-content: space-between; align-items: center;">
+  <a href="https://www.nxp.com">
+    <img src="https://mcuxpresso.nxp.com/static/icon/nxp-logo-color.svg" width="100"/>
+  </a>
+  <a href="https://www.wolfssl.com/">
+    <img src="Images/wolfssl_logo_300px.png" width="100"/>
+  </a>
+</div>
 
 ## wolfSSL TLSv1.3 Hello Server using Zephyr RTOS
 
@@ -59,18 +66,13 @@ Creating a simple server using the Zephyr RTOS and wolfSSL to utilize the networ
 
 ## 3. Setup<a name="step3"></a>
 
-### 3.1 Step 1
-1. Open the MCUXpresso in VS Code.
+### 3.1 Import the Project and build
+1. Follow section 1: `Setup` in the top level [README](../README.md)
+2. Under the "Projects" tab, right click the project and choose "build selected", this should result in no errors. 
 
-[<img src="Images/Setup3-1.png" width="600"/>](Images/Setup3-1.png)
+[<img src="Images/Setup3-3.png" width="300"/>](Images/Setup3-3.png)
 
-2. Under the "QuickStart Panel" Tab select "Application Code Hub". Then search for this example, and select the folder you want to download it to.
-
-[<img src="Images/Setup3-2.png" width="600"/>](Images/Setup3-2.png)
-
-3. Under the "Projects" tab, right click the project and choose "build selected", this should result in no errors
-
-[<img src="Images/Setup3-3.png" width="600"/>](Images/Setup3-3.png)
+The project should be called `dm-wolfssl-tls-hello-server-with-zephyr`.
 
 
 ### 3.2 Connect hardware
