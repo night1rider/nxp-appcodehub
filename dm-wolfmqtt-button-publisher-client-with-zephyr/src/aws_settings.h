@@ -23,6 +23,7 @@
 #define WOLFMQTT_AWS_SETTINGS_H
 
 /* Configuration */
+#define ENABLE_MQTT_TLS
 #define APP_NAME                "awsiot"
 #define APP_HARDWARE            "mqtt_tls_demo"       /* Name of the application hardware */
 #define APP_FIRMWARE_VERSION    LIBWOLFMQTT_VERSION_STRING  /* Firmware version from wolfMQTT */
@@ -62,7 +63,7 @@
 
 
 /* Demo Certificates */
-WOLFMQTT_EXAMPLE_CERT const char* root_ca =
+const char* root_ca =
 "-----BEGIN CERTIFICATE-----\n"
 "MIIE0zCCA7ugAwIBAgIQGNrRniZ96LtKIVjNzGs7SjANBgkqhkiG9w0BAQUFADCB\n"
 "yjELMAkGA1UEBhMCVVMxFzAVBgNVBAoTDlZlcmlTaWduLCBJbmMuMR8wHQYDVQQL\n"
@@ -105,7 +106,7 @@ static const char* device_pub_key =
 "-----END PUBLIC KEY-----";
 #endif
 
-WOLFMQTT_EXAMPLE_CERT const char* device_priv_key =
+const char* device_priv_key =
 #ifndef WOLFSSL_ENCRYPTED_KEYS
 "-----BEGIN RSA PRIVATE KEY-----\n"
 "MIIEpAIBAAKCAQEAqsAKVhbfQEWblC8PvgubqpJasVoCEsSfvLF4b5DIAsoMeieP\n"
@@ -167,7 +168,7 @@ WOLFMQTT_EXAMPLE_CERT const char* device_priv_key =
 "-----END ENCRYPTED PRIVATE KEY-----";
 #endif
 
-WOLFMQTT_EXAMPLE_CERT const char* device_cert =
+const char* device_cert =
 "-----BEGIN CERTIFICATE-----\n"
 "MIIDWjCCAkKgAwIBAgIVANIzUucLFUREa2BiJUXoRv6Z4XaIMA0GCSqGSIb3DQEB\n"
 "CwUAME0xSzBJBgNVBAsMQkFtYXpvbiBXZWIgU2VydmljZXMgTz1BbWF6b24uY29t\n"

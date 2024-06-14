@@ -1,4 +1,4 @@
-/* user_settings.h
+/* wolfssl_usersettings.h
  *
  * Copyright (C) 2006-2024 wolfSSL Inc.
  *
@@ -57,10 +57,6 @@ extern "C" {
 //#define FREERTOS
 #define NO_FILESYSTEM
 #define NO_WRITEV
-#define NO_MAIN_FUNCTION
-#define NO_MAIN_DRIVER
-#define NO_ASN_TIME
-#define USE_CERT_BUFFERS_2048
 #define USE_ANY_ADDR
 /* ------------------------------------------------------------------------- */
 /* Hardware */
