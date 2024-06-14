@@ -13,6 +13,10 @@ endif()
 
 
 target_sources(app PRIVATE src/main.c)
+#FILE(GLOB app_sources __repo__/modules/lib/wolfmqtt/examples/mqttclient/*.c __repo__/modules/lib/wolfmqtt/examples/*.c __repo__/modules/lib/wolfmqtt/examples/samples/*.c)
+#target_sources(app PRIVATE ${app_sources})
+
+target_include_directories(app PRIVATE __repo__/modules/lib/wolfmqtt/zephyr/client_tls)
 target_include_directories(app PRIVATE src)
 
 
