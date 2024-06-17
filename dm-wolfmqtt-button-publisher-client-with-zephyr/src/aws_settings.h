@@ -62,7 +62,7 @@
     #define MQTT_USE_TLS     0
     #define MQTT_PORT        1883
 #endif
-#define MQTT_MAX_PACKET_SZ   1024
+#define MQTT_MAX_PACKET_SZ   512
 #define INVALID_SOCKET_FD    -1
 #define PRINT_BUFFER_SIZE    80
 

@@ -250,6 +250,7 @@ static int socket_get_error(int sockFd)
 static int mqtt_net_connect(void *context, const char* host, word16 port,
     int timeout_ms)
 {
+	PRINTF("ENTER MQTT NET CONNECT");
     int rc;
     int sockFd, *pSockFd = (int*)context;
     struct sockaddr_in addr;
@@ -313,12 +314,13 @@ static int mqtt_net_connect(void *context, const char* host, word16 port,
 
     /* save socket number to context */
     *pSockFd = sockFd;
-
+	PRINTF("EXIT MQTT NET CONNECT");
     return MQTT_CODE_SUCCESS;
 }
 
 static int mqtt_net_read(void *context, byte* buf, int buf_len, int timeout_ms)
 {
+	PRINTF("ENTER MQTT NET READ");
     int rc;
     int *pSockFd = (int*)context;
     int bytes = 0;
@@ -349,13 +351,14 @@ static int mqtt_net_read(void *context, byte* buf, int buf_len, int timeout_ms)
     if (bytes == 0) {
         return MQTT_CODE_ERROR_TIMEOUT;
     }
-
+	PRINTF("EXIT MQTT NET READ");
     return bytes;
 }
 
 static int mqtt_net_write(void *context, const byte* buf, int buf_len,
     int timeout_ms)
 {
+	PRINTF("ENTER MQTT NET WRITE");
     int rc;
     int *pSockFd = (int*)context;
     struct timeval tv;
@@ -375,12 +378,13 @@ static int mqtt_net_write(void *context, const byte* buf, int buf_len,
             rc, socket_get_error(*pSockFd));
         return MQTT_CODE_ERROR_NETWORK;
     }
-
+	PRINTF("EXIT MQTT NET CONNECT");
     return rc;
 }
 
 static int mqtt_net_disconnect(void *context)
 {
+	PRINTF("ENTER MQTT NET DISCONNECT");
     int *pSockFd = (int*)context;
 
     if (pSockFd == NULL) {
@@ -389,7 +393,7 @@ static int mqtt_net_disconnect(void *context)
 
     close(*pSockFd);
     *pSockFd = INVALID_SOCKET_FD;
-
+	PRINTF("EXIT MQTT NET DISCONNECT");
     return MQTT_CODE_SUCCESS;
 }
 
@@ -660,12 +664,11 @@ int main(void) {
     printf("\nRunning wolfSSL example from the %s!\n", CONFIG_BOARD);
     
     /* Start up the network */
-    /*
     if (startNetwork() != 0) {
         printf("Network Initialization via DHCP Failed\n");
         return 1;
     }
-    */
+
     set_time_using_ntp(resolve_hostname("pool.ntp.org"));
     if (wolfSSL_Init() != WOLFSSL_SUCCESS) {
         PRINTF("FAILED");

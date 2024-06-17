@@ -96,7 +96,7 @@ extern "C" {
 #endif
 
 /* Disable older TLS version prior to 1.2 */
-//#define NO_OLD_TLS
+#define NO_OLD_TLS
 
 /* Enable default TLS extensions */
 #define HAVE_TLS_EXTENSIONS
