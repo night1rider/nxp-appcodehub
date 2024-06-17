@@ -23,28 +23,33 @@
 #define WOLFMQTT_AWS_SETTINGS_H
 
 /* Configuration */
-#define ENABLE_MQTT_TLS
 #define APP_NAME                "awsiot"
 #define APP_HARDWARE            "mqtt_tls_demo"       /* Name of the application hardware */
 #define APP_FIRMWARE_VERSION    LIBWOLFMQTT_VERSION_STRING  /* Firmware version from wolfMQTT */
 /* Maximum size for network read/write callbacks */
 #ifndef MAX_BUFFER_SIZE
-#define MAX_BUFFER_SIZE         512  
+#define MAX_BUFFER_SIZE         512
 #endif
 /* MQTT broker address */
-#define MQTT_BROKER_HOST        "a2dujmi05ideo2-ats.iot.us-west-2.amazonaws.com"    
+#define MQTT_HOST        "a2dujmi05ideo2-ats.iot.us-west-2.amazonaws.com"    
 /* Device ID for the MQTT client */
 #define MQTT_DEVICE_ID          "demoDevice"        
 /* Quality of Service level for MQTT */
 #define MQTT_QOS                MQTT_QOS_1               
 /* Keep alive interval in seconds */
-#define MQTT_KEEP_ALIVE_SEC     DEFAULT_KEEP_ALIVE_SEC   
+#define MQTT_KEEP_ALIVE_SEC     60   
 /* Command timeout in milliseconds */
-#define MQTT_CMD_TIMEOUT_SEC     DEFAULT_CMD_TIMEOUT_MS   
+#define MQTT_CMD_TIMEOUT_MS    30000
+#define MQTT_CON_TIMEOUT_MS     5000
+
+#define MQTT_CLIENT_ID       "WolfMQTTClientSimple"
+#define MQTT_TOPIC_NAME      "wolfMQTT/example/testTopic"
+#define MQTT_PUBLISH_MSG     "Test Publish"
+
 /* Topic for publishing messages */
 #define MQTT_PUBLISH_TOPIC      "$aws/things/" MQTT_DEVICE_ID "/shadow/update"  
 /* Topic for subscribing to messages */
-#define MQTT_SUBSCRIBE_TOPIC    MQTT_PUBLISH_TOPIC       
+#define MQTT_SUBSCRIBE_TOPIC    MQTT_PUBLISH_TOPIC  
 /* Maximum size of the publish message */
 #define MQTT_PUBLISH_MSG_SZ     400
 #define WOLFMQTT_DEFAULT_TLS    1
@@ -63,7 +68,7 @@
 
 
 /* Demo Certificates */
-const char* root_ca =
+static const char* root_ca =
 "-----BEGIN CERTIFICATE-----\n"
 "MIIE0zCCA7ugAwIBAgIQGNrRniZ96LtKIVjNzGs7SjANBgkqhkiG9w0BAQUFADCB\n"
 "yjELMAkGA1UEBhMCVVMxFzAVBgNVBAoTDlZlcmlTaWduLCBJbmMuMR8wHQYDVQQL\n"
@@ -106,7 +111,7 @@ static const char* device_pub_key =
 "-----END PUBLIC KEY-----";
 #endif
 
-const char* device_priv_key =
+static const char* device_priv_key =
 #ifndef WOLFSSL_ENCRYPTED_KEYS
 "-----BEGIN RSA PRIVATE KEY-----\n"
 "MIIEpAIBAAKCAQEAqsAKVhbfQEWblC8PvgubqpJasVoCEsSfvLF4b5DIAsoMeieP\n"
@@ -168,7 +173,7 @@ const char* device_priv_key =
 "-----END ENCRYPTED PRIVATE KEY-----";
 #endif
 
-const char* device_cert =
+static const char* device_cert =
 "-----BEGIN CERTIFICATE-----\n"
 "MIIDWjCCAkKgAwIBAgIVANIzUucLFUREa2BiJUXoRv6Z4XaIMA0GCSqGSIb3DQEB\n"
 "CwUAME0xSzBJBgNVBAsMQkFtYXpvbiBXZWIgU2VydmljZXMgTz1BbWF6b24uY29t\n"

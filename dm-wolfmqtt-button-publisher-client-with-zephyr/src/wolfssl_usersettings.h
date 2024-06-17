@@ -19,15 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1335, USA
  */
 
-#ifndef USER_SETTINGS_H
-#define USER_SETTINGS_H
 
-#ifdef CONFIG_WOLFSSL
-
-/* If a custom user_settings file is provided use it instead */
-#ifdef WOLFSSL_SETTINGS_FILE
-#include WOLFSSL_SETTINGS_FILE
-#else
 
 #ifdef __cplusplus
 extern "C" {
@@ -41,7 +33,7 @@ extern "C" {
 #define SIZEOF_LONG_LONG 8          /* long long is 8 bytes / 64-bit */
 //#define WOLFSSL_NO_ASM /* optionally disable inline assembly support */
 #define WOLFSSL_IGNORE_FILE_WARN /* ignore file includes not required */
-//#define WOLFSSL_SMALL_STACK /* option to reduce stack size, offload to heap */
+#define WOLFSSL_SMALL_STACK /* option to reduce stack size, offload to heap */
 #define BENCH_EMBEDDED /* use smaller buffers in benchmark / tests */
 
 /* Network stack */
@@ -53,11 +45,12 @@ extern "C" {
 
 /* RTOS */
 /* Default is POSIX mutex and pthreads*/
-//#define SINGLE_THREADED
+#define SINGLE_THREADED
 //#define FREERTOS
 #define NO_FILESYSTEM
 #define NO_WRITEV
 #define USE_ANY_ADDR
+//#define NO_ASN_TIME
 /* ------------------------------------------------------------------------- */
 /* Hardware */
 /* ------------------------------------------------------------------------- */
@@ -103,7 +96,7 @@ extern "C" {
 #endif
 
 /* Disable older TLS version prior to 1.2 */
-#define NO_OLD_TLS
+//#define NO_OLD_TLS
 
 /* Enable default TLS extensions */
 #define HAVE_TLS_EXTENSIONS
@@ -114,7 +107,7 @@ extern "C" {
 #define HAVE_SNI /* optional Server Name Indicator (SNI) */
 
 /* ASN */
-#define WOLFSSL_ASN_TEMPLATE /* use newer ASN template asn.c code (default) */
+//#define WOLFSSL_ASN_TEMPLATE /* use newer ASN template asn.c code (default) */
 #if 0 /* optional space reductions */
     #define WOLFSSL_NO_ASN_STRICT
     #define IGNORE_NAME_CONSTRAINTS
@@ -215,7 +208,7 @@ extern "C" {
 #endif
 
 /* SHA-1 */
-#if 0
+#if 1
     #undef  NO_SHA /* on by default */
     //#define USE_SLOW_SHA /* 1k smaller, but 25% slower */
 #else
@@ -254,21 +247,21 @@ extern "C" {
 /* AES-GCM */
 #if 1
     #define HAVE_AESGCM
-    #define GCM_SMALL /* GCM Method: GCM_TABLE_4BIT, GCM_SMALL, GCM_WORD32 or GCM_TABLE */
+    #define GCM_TABLE_4BIT /* GCM Method: GCM_TABLE_4BIT, GCM_SMALL, GCM_WORD32 or GCM_TABLE */
     //#define WOLFSSL_AESGCM_STREAM
 #endif
-//#define HAVE_AES_DECRYPT
-//#define WOLFSSL_AES_COUNTER
-//#define WOLFSSL_AES_CFB
-//#define WOLFSSL_AES_OFB
-//#define HAVE_AESCCM
-//#define WOLFSSL_AES_XTS
+#define HAVE_AES_DECRYPT
+#define WOLFSSL_AES_COUNTER
+#define WOLFSSL_AES_CFB
+#define WOLFSSL_AES_OFB
+#define HAVE_AESCCM
+#define WOLFSSL_AES_XTS
 
 //#define NO_AES_128
 //#define NO_AES_192
 //#define NO_AES_256
-//#define WOLFSSL_AES_SMALL_TABLES
-//#define WOLFSSL_AES_NO_UNROLL
+#define WOLFSSL_AES_SMALL_TABLES
+#define WOLFSSL_AES_NO_UNROLL
 
 
 /* HKDF */
@@ -290,16 +283,118 @@ extern "C" {
 //#define WOLFSSL_CERT_REQ
 //#define WOLFSSL_CERT_EXT
 //#define NO_PWDBASED
+#undef  WC_NO_ASYNC_THREADING
+#define WC_NO_ASYNC_THREADING
+
+#undef  HAVE_DH_DEFAULT_PARAMS
+#define HAVE_DH_DEFAULT_PARAMS
+
+#undef  WOLFSSL_SYS_CA_CERTS
+#define WOLFSSL_SYS_CA_CERTS
+#undef  HAVE_ENCRYPT_THEN_MAC
+#define HAVE_ENCRYPT_THEN_MAC
+
+#undef  HAVE_EXTENDED_MASTER
+#define HAVE_EXTENDED_MASTER
+
+#undef  HAVE_POLY1305
+#define HAVE_POLY1305
+
+#undef  HAVE_CHACHA
+#define HAVE_CHACHA
+
+#undef  HAVE_HASHDRBG
+#define HAVE_HASHDRBG
+
+#undef  HAVE_TLS_EXTENSIONS
+#define HAVE_TLS_EXTENSIONS
+
+#undef  HAVE_SNI
+#define HAVE_SNI
+
+#undef  HAVE_TLS_EXTENSIONS
+#define HAVE_TLS_EXTENSIONS
+
+#undef  HAVE_SUPPORTED_CURVES
+#define HAVE_SUPPORTED_CURVES
+
+#undef  HAVE_FFDHE_2048
+#define HAVE_FFDHE_2048
+
+#undef  HAVE_SUPPORTED_CURVES
+#define HAVE_SUPPORTED_CURVES
+
+#undef  WOLFSSL_SHA3
+#define WOLFSSL_SHA3
+
+#undef  WC_RSA_PSS
+#define WC_RSA_PSS
+
+#undef  WOLFSSL_PSS_LONG_SALT
+#define WOLFSSL_PSS_LONG_SALT
+
+
+#undef  WOLFSSL_ASN_PRINT
+#define WOLFSSL_ASN_PRINT
+
+#undef  HAVE_ECC
+#define HAVE_ECC
+
+#undef  TFM_ECC256
+#define TFM_ECC256
+
+#undef  ECC_SHAMIR
+#define ECC_SHAMIR
+
+#undef  ERROR_QUEUE_PER_THREAD
+#define ERROR_QUEUE_PER_THREAD
+
+#undef  TFM_TIMING_RESISTANT
+#define TFM_TIMING_RESISTANT
+
+#undef  ECC_TIMING_RESISTANT
+#define ECC_TIMING_RESISTANT
+
+#undef  WC_RSA_BLINDING
+#define WC_RSA_BLINDING
+
+#undef  WOLFSSL_USE_ALIGN
+#define WOLFSSL_USE_ALIGN
+
+#undef  WOLFSSL_SHA224
+#define WOLFSSL_SHA224
+
+#undef  WOLFSSL_SHA512
+#define WOLFSSL_SHA512
+
+#undef  WOLFSSL_SHA384
+#define WOLFSSL_SHA384
+
+
+
+#undef  HAVE_SERVER_RENEGOTIATION_INFO
+#define HAVE_SERVER_RENEGOTIATION_INFO
+
+
+
+
+
+
+
+
+
+
+
 
 
 /* Disable Algorithms */
-#define NO_DSA
-#define NO_RC4
-#define NO_MD4
-#define NO_MD5
-#define NO_DES3
-#define WOLFSSL_NO_SHAKE128
-#define WOLFSSL_NO_SHAKE256
+//#define NO_DSA
+//#define NO_RC4
+//#define NO_MD4
+//#define NO_MD5
+//#define NO_DES3
+//#define WOLFSSL_NO_SHAKE128
+//#define WOLFSSL_NO_SHAKE256
 
 
 
@@ -308,9 +403,9 @@ extern "C" {
 /* ------------------------------------------------------------------------- */
 /* Math Options */
 /* Multi-precision - generic math for all keys sizes and curves */
-#if 1
+#if 0
     #define WOLFSSL_SP_MATH /* no multi-precision math, only single */
-#elif 1
+#elif 0
     /* wolf mp math (sp_int.c) */
     #define WOLFSSL_SP_MATH_ALL /* use SP math for all key sizes and curves */
     //#define WOLFSSL_SP_NO_MALLOC
@@ -425,9 +520,4 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* CONFIG_WOLFSSL_SETTINGS_FILE */
-#endif /* CONFIG_WOLFSSL */
-
-#endif /* USER_SETTINGS_H */
 

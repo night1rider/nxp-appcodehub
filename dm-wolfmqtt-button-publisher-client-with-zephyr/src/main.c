@@ -35,11 +35,13 @@
 #include <wolfmqtt/mqtt_client.h>
 #include <wolfmqtt/version.h>
 #include "aws_settings.h"
-#include "examples/mqttclient/mqttclient.h"
+#include "examples/mqttport.h"
 /* wolfMQTT Include End */
 
 /* Standard Packages Start */
 #include <stdio.h>
+#include <stdint.h>
+#include <stddef.h>
 #include <time.h>
 /* Standard Packages End */
 
@@ -53,6 +55,9 @@
 #include <zephyr/net/net_mgmt.h>
 #include <zephyr/net/net_config.h>
 #include <zephyr/net/net_ip.h>
+#include <zephyr/net/socket.h>
+#include <zephyr/net/sntp.h>
+#include <zephyr/net/dns_resolve.h>
 /* Zephyr Includes End */
 
 /* Other */
@@ -75,80 +80,522 @@
     #define STATIC_IPV4_ADDR  "192.168.1.70"
     #define STATIC_IPV4_GATEWAY "192.168.1.1"
     #define STATIC_IPV4_NETMASK "255.255.255.0"
+    #define DNS_SERVER_ADDR "8.8.8.8"
 #endif
 
 /* Set the TLS Version Currently only 2 or 3 is available for this */
 /* application, defaults to TLSv3 */
 #undef TLS_VERSION
-#define TLS_VERSION 2
+#define TLS_VERSION 1
 
 /* This just sets up the correct function for the application via macros */
 #undef TLS_METHOD
 #if TLS_VERSION == 3
-    #define TLS_METHOD wolfTLSv1_3_server_method()
+    #define TLS_METHOD wolfTLSv1_3_client_method()
 #elif TLS_VERSION == 2
-    #define TLS_METHOD wolfTLSv1_2_server_method()
+    #define TLS_METHOD wolfTLSv1_2_client_method()
 #else 
-    #define TLS_METHOD wolfTLSv1_3_server_method()
+    #define TLS_METHOD wolfSSLv23_client_method()
 #endif
 
-/* wolfMQTT Defines Start */
-
-/* wolfMQTT Defines End */
-
-/* Datatype Start */
-
-/* Datatype End */
+#define NTP_TIMESTAMP_DELTA 2208988800ull
+#define DNS_TIMEOUT 2000
 
 
-
-
-
-
+/* Local Variables */
+static MqttClient mClient;
+static MqttNet mNetwork;
+static int mSockFd = INVALID_SOCKET_FD;
+static byte mSendBuf[MQTT_MAX_PACKET_SZ];
+static byte mReadBuf[MQTT_MAX_PACKET_SZ];
+static volatile word16 mPacketIdLast;
 
 
 
+void set_time_using_ntp(const char* ntp_server) {
+    int sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP); // NTP is UDP
+
+    // NTP server address
+    struct sockaddr_in server_addr;
+    memset(&server_addr, 0, sizeof(server_addr));
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(123); // NTP uses port 123
+    inet_pton(AF_INET, ntp_server, &server_addr.sin_addr.s_addr);
+
+    // Send request
+    unsigned char packet[48] = {0xE3, 0, 6, 0xEC, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+    sendto(sockfd, packet, sizeof(packet), 0, (struct sockaddr*)&server_addr, sizeof(server_addr));
+
+    // Receive time
+    struct sockaddr_in recv_addr;
+    socklen_t addr_len = sizeof(recv_addr);
+    recvfrom(sockfd, packet, sizeof(packet), 0, (struct sockaddr*)&recv_addr, &addr_len);
+
+    // Extract time
+    unsigned long long secsSince1900;
+    memcpy(&secsSince1900, &packet[40], sizeof(secsSince1900));
+    secsSince1900 = ntohl(secsSince1900); // Network byte order to host byte order
+    time_t time = (time_t)(secsSince1900 - NTP_TIMESTAMP_DELTA);
+
+    struct timespec ts;
+    ts.tv_sec = time;
+    ts.tv_nsec = 0;
+    clock_settime(CLOCK_REALTIME, &ts);
+
+    // Print the time
+    char timeStr[50];
+    struct tm *timeinfo = localtime(&ts.tv_sec);
+    strftime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S", timeinfo);
+    printf("Time set using NTP: %s\n", timeStr);
+
+    close(sockfd);
+}
+
+char* resolve_hostname(const char *hostname) {
+    static char ip_str[NET_IPV4_ADDR_LEN];
+    struct addrinfo hints, *res;
+    struct sockaddr_in *addr;
+    int err;
+
+    // Initialize hints
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_INET; // Specify IPv4 address
+
+    // Resolve hostname to IP address
+    err = getaddrinfo(hostname, NULL, &hints, &res);
+    if (err != 0) {
+        printf("getaddrinfo() failed: %d\n", err);
+        return NULL;
+    }
+
+    // Convert the IP address to a human-readable form
+    addr = (struct sockaddr_in *)res->ai_addr;
+    inet_ntop(AF_INET, &addr->sin_addr, ip_str, sizeof(ip_str));
+
+    // Free the address info
+    freeaddrinfo(res);
+
+    return ip_str;
+}
+
+/* Local Functions */
+
+/* msg_new on first data callback */
+/* msg_done on last data callback */
+/* msg->total_len: Payload total length */
+/* msg->buffer: Payload buffer */
+/* msg->buffer_len: Payload buffer length */
+/* msg->buffer_pos: Payload buffer position */
+static int mqtt_message_cb(MqttClient *client, MqttMessage *msg,
+    byte msg_new, byte msg_done)
+{
+    byte buf[PRINT_BUFFER_SIZE+1];
+    word32 len;
+
+    (void)client;
+
+    if (msg_new) {
+        /* Determine min size to dump */
+        len = msg->topic_name_len;
+        if (len > PRINT_BUFFER_SIZE) {
+            len = PRINT_BUFFER_SIZE;
+        }
+        XMEMCPY(buf, msg->topic_name, len);
+        buf[len] = '\0'; /* Make sure its null terminated */
+
+        /* Print incoming message */
+        PRINTF("MQTT Message: Topic %s, Qos %d, Len %u",
+            buf, msg->qos, msg->total_len);
+    }
+
+    /* Print message payload */
+    len = msg->buffer_len;
+    if (len > PRINT_BUFFER_SIZE) {
+        len = PRINT_BUFFER_SIZE;
+    }
+    XMEMCPY(buf, msg->buffer, len);
+    buf[len] = '\0'; /* Make sure its null terminated */
+    PRINTF("Payload (%d - %d) printing %d bytes:" LINE_END "%s",
+        msg->buffer_pos, msg->buffer_pos + msg->buffer_len, len, buf);
+
+    if (msg_done) {
+        PRINTF("MQTT Message: Done");
+    }
+
+    /* Return negative to terminate publish processing */
+    return MQTT_CODE_SUCCESS;
+}
+
+static void setup_timeout(struct timeval* tv, int timeout_ms)
+{
+    tv->tv_sec = timeout_ms / 1000;
+    tv->tv_usec = (timeout_ms % 1000) * 1000;
+
+    /* Make sure there is a minimum value specified */
+    if (tv->tv_sec < 0 || (tv->tv_sec == 0 && tv->tv_usec <= 0)) {
+        tv->tv_sec = 0;
+        tv->tv_usec = 100;
+    }
+}
+
+static int socket_get_error(int sockFd)
+{
+    int so_error = 0;
+    socklen_t len = sizeof(so_error);
+    (void)getsockopt(sockFd, SOL_SOCKET, SO_ERROR, &so_error, &len);
+    return so_error;
+}
+
+static int mqtt_net_connect(void *context, const char* host, word16 port,
+    int timeout_ms)
+{
+    int rc;
+    int sockFd, *pSockFd = (int*)context;
+    struct sockaddr_in addr;
+    struct addrinfo *result = NULL;
+    struct addrinfo hints;
+
+    if (pSockFd == NULL) {
+        return MQTT_CODE_ERROR_BAD_ARG;
+    }
+
+    (void)timeout_ms;
+
+    /* get address */
+    XMEMSET(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_protocol = IPPROTO_TCP;
+
+    XMEMSET(&addr, 0, sizeof(addr));
+    addr.sin_family = AF_INET;
+
+    rc = getaddrinfo(host, NULL, &hints, &result);
+    if (rc >= 0 && result != NULL) {
+        struct addrinfo* res = result;
+
+        /* prefer ip4 addresses */
+        while (res) {
+            if (res->ai_family == AF_INET) {
+                break;
+            }
+            res = res->ai_next;
+        }
+        if (res) {
+            addr.sin_port = htons(port);
+            addr.sin_family = AF_INET;
+            addr.sin_addr =
+                ((struct sockaddr_in*)(res->ai_addr))->sin_addr;
+        }
+        else {
+            rc = -1;
+        }
+        freeaddrinfo(result);
+    }
+    if (rc < 0) {
+        return MQTT_CODE_ERROR_NETWORK;
+    }
+
+    sockFd = socket(addr.sin_family, SOCK_STREAM, 0);
+    if (sockFd < 0) {
+        return MQTT_CODE_ERROR_NETWORK;
+    }
+
+    /* Start connect */
+    rc = connect(sockFd, (struct sockaddr*)&addr, sizeof(addr));
+    if (rc < 0) {
+        PRINTF("NetConnect: Error %d (Sock Err %d)",
+            rc, socket_get_error(*pSockFd));
+        close(sockFd);
+        return MQTT_CODE_ERROR_NETWORK;
+    }
+
+    /* save socket number to context */
+    *pSockFd = sockFd;
+
+    return MQTT_CODE_SUCCESS;
+}
+
+static int mqtt_net_read(void *context, byte* buf, int buf_len, int timeout_ms)
+{
+    int rc;
+    int *pSockFd = (int*)context;
+    int bytes = 0;
+    struct timeval tv;
+
+    if (pSockFd == NULL) {
+        return MQTT_CODE_ERROR_BAD_ARG;
+    }
+
+    /* Setup timeout */
+    setup_timeout(&tv, timeout_ms);
+    (void)setsockopt(*pSockFd, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv,
+            sizeof(tv));
+
+    /* Loop until buf_len has been read, error or timeout */
+    while (bytes < buf_len) {
+        rc = (int)recv(*pSockFd, &buf[bytes], buf_len - bytes, 0);
+        if (rc < 0) {
+            rc = socket_get_error(*pSockFd);
+            if (rc == 0)
+                break; /* timeout */
+            PRINTF("NetRead: Error %d", rc);
+            return MQTT_CODE_ERROR_NETWORK;
+        }
+        bytes += rc; /* Data */
+    }
+
+    if (bytes == 0) {
+        return MQTT_CODE_ERROR_TIMEOUT;
+    }
+
+    return bytes;
+}
+
+static int mqtt_net_write(void *context, const byte* buf, int buf_len,
+    int timeout_ms)
+{
+    int rc;
+    int *pSockFd = (int*)context;
+    struct timeval tv;
+
+    if (pSockFd == NULL) {
+        return MQTT_CODE_ERROR_BAD_ARG;
+    }
+
+    /* Setup timeout */
+    setup_timeout(&tv, timeout_ms);
+    (void)setsockopt(*pSockFd, SOL_SOCKET, SO_SNDTIMEO, (char *)&tv,
+            sizeof(tv));
+
+    rc = (int)send(*pSockFd, buf, buf_len, 0);
+    if (rc < 0) {
+        PRINTF("NetWrite: Error %d (Sock Err %d)",
+            rc, socket_get_error(*pSockFd));
+        return MQTT_CODE_ERROR_NETWORK;
+    }
+
+    return rc;
+}
+
+static int mqtt_net_disconnect(void *context)
+{
+    int *pSockFd = (int*)context;
+
+    if (pSockFd == NULL) {
+        return MQTT_CODE_ERROR_BAD_ARG;
+    }
+
+    close(*pSockFd);
+    *pSockFd = INVALID_SOCKET_FD;
+
+    return MQTT_CODE_SUCCESS;
+}
 
 
-/* Define a macro for logging */
-#define LOG_INFO(fmt, ...) printf("INFO: " fmt "\n", ##__VA_ARGS__)
-#define LOG_ERROR(fmt, ...) printf("ERROR: " fmt "\n", ##__VA_ARGS__)
+static int mqtt_tls_verify_cb(int preverify, WOLFSSL_X509_STORE_CTX* store)
+{
+    char buffer[WOLFSSL_MAX_ERROR_SZ];
 
-static MqttNet net_ctx;
-static MqttClient mqtt_client;
-static MqttConnect mqtt_connect;
-static MqttSubscribe mqtt_subscribe;
-static MqttMessage mqtt_message;
-static WOLFSSL_CTX *ssl_ctx;
-static WOLFSSL *ssl;
+    PRINTF("MQTT TLS Verify Callback: PreVerify %d, Error %d (%s)", preverify,
+        store->error, store->error != 0 ?
+            wolfSSL_ERR_error_string(store->error, buffer) : "none");
+    PRINTF("  Subject's domain name is %s", store->domain);
 
-/* Callback function declarations */
-static int mqtt_msg_callback(MqttClient *client, MqttMessage *msg, unsigned char msg_new, unsigned char msg_done);
-int mqtt_tls_cb(MqttClient *client); // Ensure this matches the declaration in the header file
+    if (store->error != 0) {
+        /* Allowing to continue */
+        /* Should check certificate and return 0 if not okay */
+        PRINTF("  Allowing cert anyways");
+    }
 
-static int mqtt_net_connect(void *context, const char* host, word16 port, int timeout_ms);
-static int mqtt_net_read(void *context, byte* buf, int buf_len, int timeout_ms);
-static int mqtt_net_write(void *context, const byte* buf, int buf_len, int timeout_ms);
-static int mqtt_net_disconnect(void *context);
-
-static void broker_init(void);
-static void mqtt_client_init_custom(void);
-static void set_mqtt_connection_params(void);
-static int tls_setup(void);
-static int mqtt_client_connect(void);
-static void send_mqtt_connect_packet(void);
-static bool is_connection_successful(int rc);
-static void subscribe_to_topics(void);
-static void publish_to_topics(void);
-static void wait_for_messages(void);
-static bool check_for_commands(void);
-static bool disconnect_needed(void);
-static void mqtt_disconnect(void);
-static void cleanup_resources(void);
-char* resolve_hostname(const char *hostname);
-static int mqtt_tls_verify_cb(int preverify, WOLFSSL_X509_STORE_CTX* store);
+    return 1;
+}
 
 
+#ifdef ENABLE_MQTT_TLS
+/* Use this callback to setup TLS certificates and verify callbacks */
+static int mqtt_tls_cb(MqttClient* client)
+{
+
+    int rc = WOLFSSL_FAILURE;
+    /* Use highest available and allow downgrade. If wolfSSL is built with
+     * old TLS support, it is possible for a server to force a downgrade to
+     * an insecure version. */
+    client->tls.ctx = wolfSSL_CTX_new(TLS_METHOD);
+    if (client->tls.ctx) {
+        wolfSSL_CTX_set_verify(client->tls.ctx, WOLFSSL_VERIFY_PEER,
+                               mqtt_tls_verify_cb);
+
+        /* Load CA certificate buffer */
+        rc = wolfSSL_CTX_load_verify_buffer(client->tls.ctx, (const byte*)root_ca, (long)XSTRLEN(root_ca), WOLFSSL_FILETYPE_PEM);
+        if (rc != WOLFSSL_SUCCESS) {
+            PRINTF("Failed to load CA certificate");
+            wolfSSL_CTX_free(client->tls.ctx);
+            return rc;
+        }
+
+        /* Load client certificate */
+        rc = wolfSSL_CTX_use_certificate_buffer(client->tls.ctx, (const unsigned char*)device_cert, strlen(device_cert), WOLFSSL_FILETYPE_PEM);
+        if (rc != WOLFSSL_SUCCESS) {
+            PRINTF("Failed to load client certificate");
+            wolfSSL_CTX_free(client->tls.ctx);
+            return rc;
+        }
+
+        /* Load client private key */
+        rc = wolfSSL_CTX_use_PrivateKey_buffer(client->tls.ctx, (const unsigned char*)device_priv_key, strlen(device_priv_key), WOLFSSL_FILETYPE_PEM);
+        if (rc != WOLFSSL_SUCCESS) {
+            PRINTF("Failed to load client private key");
+            wolfSSL_CTX_free(client->tls.ctx);
+            return rc;
+        }
+
+        /* Create WOLFSSL object */
+        client->tls.ssl = wolfSSL_new(client->tls.ctx);
+        if (client->tls.ssl == NULL) {
+            PRINTF("Failed to create WOLFSSL object");
+            wolfSSL_CTX_free(client->tls.ctx);
+            return WOLFSSL_FAILURE;
+        }
+    }
+
+    PRINTF("MQTT TLS Setup (%d)", rc);
+
+    return rc;
+}
+
+#else
+static int mqtt_tls_cb(MqttClient* client)
+{
+    (void)client;
+    return 0;
+}
+#endif /* ENABLE_MQTT_TLS */
+
+
+static word16 mqtt_get_packetid(void)
+{
+    /* Check rollover */
+    if (mPacketIdLast >= MAX_PACKET_ID) {
+        mPacketIdLast = 0;
+    }
+
+    return ++mPacketIdLast;
+}
+
+
+
+int mqttsimple_test(void)
+{
+    int rc = 0;
+    MqttObject mqttObj;
+    MqttTopic topics[1];
+
+    /* Initialize MQTT client */
+    XMEMSET(&mNetwork, 0, sizeof(mNetwork));
+    mNetwork.connect = mqtt_net_connect;
+    mNetwork.read = mqtt_net_read;
+    mNetwork.write = mqtt_net_write;
+    mNetwork.disconnect = mqtt_net_disconnect;
+    mNetwork.context = &mSockFd;
+    rc = MqttClient_Init(&mClient, &mNetwork, mqtt_message_cb,
+        mSendBuf, sizeof(mSendBuf), mReadBuf, sizeof(mReadBuf),
+        MQTT_CON_TIMEOUT_MS);
+    if (rc != MQTT_CODE_SUCCESS) {
+        goto exit;
+    }
+    PRINTF("MQTT Init Success");
+
+    /* Connect to broker */
+    wolfSSL_Debugging_ON();
+    rc = MqttClient_NetConnect(&mClient, resolve_hostname(MQTT_HOST), MQTT_PORT,
+        MQTT_CON_TIMEOUT_MS, MQTT_USE_TLS, mqtt_tls_cb);
+    if (rc != MQTT_CODE_SUCCESS) {
+        goto exit;
+    }
+    PRINTF("MQTT Network Connect Success: Host %s, Port %d, UseTLS %d",
+        MQTT_HOST, MQTT_PORT, MQTT_USE_TLS);
+
+    /* Send Connect and wait for Ack */
+    XMEMSET(&mqttObj, 0, sizeof(mqttObj));
+    mqttObj.connect.keep_alive_sec = MQTT_KEEP_ALIVE_SEC;
+    mqttObj.connect.client_id = MQTT_CLIENT_ID;
+    mqttObj.connect.username = MQTT_USERNAME;
+    mqttObj.connect.password = MQTT_PASSWORD;
+    rc = MqttClient_Connect(&mClient, &mqttObj.connect);
+    if (rc != MQTT_CODE_SUCCESS) {
+        goto exit;
+    }
+    PRINTF("MQTT Broker Connect Success: ClientID %s, Username %s, Password %s",
+        MQTT_CLIENT_ID,
+        (MQTT_USERNAME == NULL) ? "Null" : MQTT_USERNAME,
+        (MQTT_PASSWORD == NULL) ? "Null" : MQTT_PASSWORD);
+
+    /* Subscribe and wait for Ack */
+    XMEMSET(&mqttObj, 0, sizeof(mqttObj));
+    topics[0].topic_filter = MQTT_TOPIC_NAME;
+    topics[0].qos = MQTT_QOS;
+    mqttObj.subscribe.packet_id = mqtt_get_packetid();
+    mqttObj.subscribe.topic_count = sizeof(topics) / sizeof(MqttTopic);
+    mqttObj.subscribe.topics = topics;
+    rc = MqttClient_Subscribe(&mClient, &mqttObj.subscribe);
+    if (rc != MQTT_CODE_SUCCESS) {
+        goto exit;
+    }
+    PRINTF("MQTT Subscribe Success: Topic %s, QoS %d",
+        MQTT_TOPIC_NAME, MQTT_QOS);
+
+    /* Publish */
+    XMEMSET(&mqttObj, 0, sizeof(mqttObj));
+    mqttObj.publish.qos = MQTT_QOS;
+    mqttObj.publish.topic_name = MQTT_TOPIC_NAME;
+    mqttObj.publish.packet_id = mqtt_get_packetid();
+    mqttObj.publish.buffer = (byte*)MQTT_PUBLISH_MSG;
+    mqttObj.publish.total_len = XSTRLEN(MQTT_PUBLISH_MSG);
+    rc = MqttClient_Publish(&mClient, &mqttObj.publish);
+    if (rc != MQTT_CODE_SUCCESS) {
+        goto exit;
+    }
+    PRINTF("MQTT Publish: Topic %s, ID %d, Qos %d, Message %s",
+        mqttObj.publish.topic_name, mqttObj.publish.packet_id,
+        mqttObj.publish.qos, mqttObj.publish.buffer);
+
+    /* Wait for messages */
+    while (1) {
+        rc = MqttClient_WaitMessage_ex(&mClient, &mqttObj, MQTT_CMD_TIMEOUT_MS);
+
+        if (rc == MQTT_CODE_ERROR_TIMEOUT) {
+            /* send keep-alive ping */
+            rc = MqttClient_Ping_ex(&mClient, &mqttObj.ping);
+            if (rc != MQTT_CODE_SUCCESS) {
+                break;
+            }
+            PRINTF("MQTT Keep-Alive Ping");
+        }
+        else if (rc != MQTT_CODE_SUCCESS) {
+            break;
+        }
+    }
+
+exit:
+    if (rc != MQTT_CODE_SUCCESS) {
+        PRINTF("MQTT Error %d: %s", rc, MqttClient_ReturnCodeToString(rc));
+    }
+    return rc;
+}
+
+
+void check_connectivity(void) {
+    struct in_addr my_dns_server_ip;
+    inet_pton(AF_INET, "192.168.1.1", &my_dns_server_ip); // Replace with your DNS server IP
+
+    if (net_icmpv4_ping(&my_dns_server_ip) == 0) {
+        PRINTF("Ping successful");
+    } else {
+        PRINTF("Ping failed");
+    }
+}
 
 
 
@@ -190,6 +637,7 @@ int startNetwork() {
         net_if_ipv4_set_netmask_by_addr(iface, &addr, &netmask);
         net_if_ipv4_set_gw(iface, &gw);
         net_if_ipv4_addr_add(iface, &addr, NET_ADDR_MANUAL, 0);
+
     #else
         #error "Please set DHCP_ON to true (1) or false (0), if unsure set to true (1)"
     #endif
@@ -208,599 +656,22 @@ int startNetwork() {
 
 
 
-
-
-
-
-
-/* Step A: Initialize Network */
-static void broker_init(void) {
-    // Set up network callbacks
-    LOG_INFO("Initializing network context...");
-    XMEMSET(&net_ctx, 0, sizeof(MqttNet));
-    net_ctx.context = NULL;
-    net_ctx.connect = mqtt_net_connect;
-    net_ctx.read = mqtt_net_read;
-    net_ctx.write = mqtt_net_write;
-    net_ctx.disconnect = mqtt_net_disconnect;
-    LOG_INFO("Network context initialized successfully");
-}
-
-static int mqtt_net_connect(void *context, const char* host, word16 port, int timeout_ms) {
-    LOG_INFO("Connecting to broker at %s:%d", host, port);
-
-    struct sockaddr_in broker;
-    broker.sin_family = AF_INET;
-    broker.sin_port = htons(port);
-    if (inet_pton(AF_INET, host, &broker.sin_addr) <= 0) {
-        LOG_ERROR("Invalid address or address not supported");
-        return MQTT_CODE_ERROR_NETWORK;
-    }
-
-    int sock = socket(AF_INET, SOCK_STREAM, 0);
-    if (sock < 0) {
-        LOG_ERROR("Failed to create socket");
-        return MQTT_CODE_ERROR_NETWORK;
-    }
-
-    if (connect(sock, (struct sockaddr *)&broker, sizeof(broker)) < 0) {
-        LOG_ERROR("Failed to connect to broker");
-        close(sock);
-        return MQTT_CODE_ERROR_NETWORK;
-    }
-
-    LOG_INFO("Connected to broker successfully, socket: %d", sock);
-    net_ctx.context = (void *)(intptr_t)sock; // Ensure correct casting of the socket context
-    return MQTT_CODE_SUCCESS;
-}
-
-static int mqtt_net_read(void *context, byte* buf, int buf_len, int timeout_ms) {
-    int sock = (int)(intptr_t)context; // Ensure correct casting of the socket context
-    LOG_INFO("Reading from socket %d", sock);
-
-    int bytes_read = recv(sock, buf, buf_len, 0);
-    if (bytes_read < 0) {
-        LOG_ERROR("Failed to read from socket");
-        return MQTT_CODE_ERROR_NETWORK;
-    }
-
-    LOG_INFO("Read %d bytes from socket", bytes_read);
-    return bytes_read;
-}
-
-static int mqtt_net_write(void *context, const byte* buf, int buf_len, int timeout_ms) {
-    int sock = (int)(intptr_t)context; // Ensure correct casting of the socket context
-    LOG_INFO("Writing to socket %d", sock);
-
-    int bytes_sent = send(sock, buf, buf_len, 0);
-    if (bytes_sent < 0) {
-        LOG_ERROR("Failed to write to socket");
-        return MQTT_CODE_ERROR_NETWORK;
-    }
-
-    LOG_INFO("Sent %d bytes to socket", bytes_sent);
-    return bytes_sent;
-}
-
-static int mqtt_net_disconnect(void *context) {
-    int sock = (int)(intptr_t)context; // Ensure correct casting of the socket context
-    LOG_INFO("Disconnecting socket %d", sock);
-
-    if (close(sock) < 0) {
-        LOG_ERROR("Failed to close socket");
-        return MQTT_CODE_ERROR_NETWORK;
-    }
-
-    LOG_INFO("Socket %d disconnected successfully", sock);
-    return MQTT_CODE_SUCCESS;
-}
-
-
-
-
-
-
-
-
-/* Step B: Initialize MQTT Client */
-static void mqtt_client_init_custom(void) {
-    LOG_INFO("Initializing MQTT client...");
-
-    uint8_t tx_buf[1024];
-    uint8_t rx_buf[1024];
-
-    int rc = MqttClient_Init(&mqtt_client, &net_ctx, mqtt_msg_callback, tx_buf, sizeof(tx_buf), rx_buf, sizeof(rx_buf), MQTT_CMD_TIMEOUT_SEC);
-    if (rc != MQTT_CODE_SUCCESS) {
-        LOG_ERROR("Failed to initialize MQTT client, return code: %d", rc);
-        return;
-    }
-
-    LOG_INFO("MQTT client initialized successfully");
-}
-
-/* MQTT Message Callback */
-static int mqtt_msg_callback(MqttClient *client, MqttMessage *msg, unsigned char msg_new, unsigned char msg_done) {
-    if (msg_new) {
-        LOG_INFO("Received a message: %.*s", msg->topic_name_len, msg->topic_name);
-    }
-    if (msg_done) {
-        LOG_INFO("Message done.");
-    }
-    return MQTT_CODE_SUCCESS;
-}
-
-
-
-
-
-
-/* Step C: Set MQTT Connection Parameters */
-static void set_mqtt_connection_params(void) {
-    LOG_INFO("Setting MQTT connection parameters...");
-
-    XMEMSET(&mqtt_connect, 0, sizeof(MqttConnect));
-    mqtt_connect.keep_alive_sec = MQTT_KEEP_ALIVE_SEC;
-    mqtt_connect.clean_session = 1;
-    mqtt_connect.client_id = (byte*)MQTT_DEVICE_ID;
-    mqtt_connect.enable_lwt = 0;
-
-    LOG_INFO("MQTT connection parameters set successfully");
-}
-
-
-
-
-
-
-/* Step D: Setup TLS for AWS IoT */
-static int tls_setup(void) {
-    LOG_INFO("Setting up TLS for AWS IoT...");
-
-    wolfSSL_Init();
-   	wolfSSL_Debugging_ON(); 
-	ssl_ctx = wolfSSL_CTX_new(TLS_METHOD);
-    if (!ssl_ctx) {
-        LOG_ERROR("Failed to create WOLFSSL_CTX");
-        return -1;
-    }
-    //wolfSSL_CTX_set_verify(ssl_ctx, SSL_VERIFY_NONE, 0); // TODO: Fix this
-	wolfSSL_CTX_set_verify(ssl_ctx, WOLFSSL_VERIFY_PEER, mqtt_tls_verify_cb);
-    if (wolfSSL_CTX_load_verify_buffer(ssl_ctx, (const byte*)root_ca, (long)XSTRLEN(root_ca), WOLFSSL_FILETYPE_PEM) != WOLFSSL_SUCCESS){
-        LOG_ERROR("Failed to load CA certificate");
-        return -1;
-    }
-
-    if (wolfSSL_CTX_use_certificate_buffer(ssl_ctx, (const unsigned char*)device_cert, XSTRLEN(device_cert), SSL_FILETYPE_PEM) != SSL_SUCCESS) {
-        LOG_ERROR("Failed to load device certificate");
-        return -1;
-    }
-
-    if (wolfSSL_CTX_use_PrivateKey_buffer(ssl_ctx, (const unsigned char*)device_priv_key, XSTRLEN(device_priv_key), SSL_FILETYPE_PEM) != SSL_SUCCESS) {
-        LOG_ERROR("Failed to load device private key");
-        return -1;
-    }
-
-    ssl = wolfSSL_new(ssl_ctx);
-    if (!ssl) {
-        LOG_ERROR("Failed to create WOLFSSL object");
-        return -1;
-    }
-    LOG_INFO("TLS setup successful");
-    return 0;
-}
-
-
-
-
-
-
-
-
-/* Step E: Connect via MqttClient_NetConnect */
-static int mqtt_client_connect(void) {
-    LOG_INFO("Connecting to MQTT broker...");
-	
-    int rc = MqttClient_NetConnect(&mqtt_client, resolve_hostname(MQTT_BROKER_HOST), MQTT_PORT, 2000, MQTT_USE_TLS, mqtt_tls_cb);
-    if (rc != MQTT_CODE_SUCCESS) {
-        LOG_ERROR("Failed to connect to broker, return code: %d", rc);
-        return rc;
-    }
-
-    LOG_INFO("Connected to MQTT broker successfully");
-    return MQTT_CODE_SUCCESS;
-}
-
-
-char* resolve_hostname(const char *hostname) {
-    static char ip_str[NET_IPV4_ADDR_LEN];
-    struct addrinfo hints, *res;
-    struct sockaddr_in *addr;
-    int err;
-
-    // Initialize hints
-    memset(&hints, 0, sizeof(hints));
-    hints.ai_family = AF_INET; // Specify IPv4 address
-
-    // Resolve hostname to IP address
-    err = getaddrinfo(hostname, NULL, &hints, &res);
-    if (err != 0) {
-        printf("getaddrinfo() failed: %d\n", err);
-        return NULL;
-    }
-
-    // Convert the IP address to a human-readable form
-    addr = (struct sockaddr_in *)res->ai_addr;
-    inet_ntop(AF_INET, &addr->sin_addr, ip_str, sizeof(ip_str));
-
-    // Free the address info
-    freeaddrinfo(res);
-
-    return ip_str;
-}
-
-
-/* TLS Callback Function */
-int mqtt_tls_cb(MqttClient *client) {
-
-
-
-    LOG_INFO("********* Entered the callback for TLS");
-    int fd = (int)(intptr_t)client->net->context; // Correctly cast the context to an integer file descriptor
-    wolfSSL_set_fd(ssl, fd);
-    return WOLFSSL_SUCCESS;
-}
-
-static int mqtt_tls_verify_cb(int preverify, WOLFSSL_X509_STORE_CTX* store)
-{
-    char buffer[WOLFSSL_MAX_ERROR_SZ];
-
-    PRINTF("MQTT TLS Verify Callback: PreVerify %d, Error %d (%s)", preverify,
-        store->error, store->error != 0 ?
-            wolfSSL_ERR_error_string(store->error, buffer) : "none");
-    PRINTF("  Subject's domain name is %s", store->domain);
-
-    if (store->error != 0) {
-        /* Allowing to continue */
-        /* Should check certificate and return 0 if not okay */
-        PRINTF("  Allowing cert anyways");
-    }
-
-    return 1;
-}
-
-
-
-
-
-/* Step F: Send MQTT Connect Packet */
-/*
-static int send_mqtt_connect_packet(void) {
-    return MqttClient_Connect(&client, &connect);
-}
-*/
-
-
-
-
-
-
-
-
-
-
-/* Step G: Check Connection Successful */
-/*
-static bool is_connection_successful(int rc) {
-    return rc == MQTT_CODE_SUCCESS;
-}
-*/
-
-
-
-
-
-
-
-
-
-
-/* Step H: Subscribe to Topics */
-/*
-static void subscribe_to_topics(void) {
-    XMEMSET(&subscribe, 0, sizeof(MqttSubscribe));
-    subscribe.packet_id = mqtt_get_packetid();
-    subscribe.topic_count = 1;
-    subscribe.topics[0].topic_filter = (const uint8_t*)MQTT_SUBSCRIBE_TOPIC;
-    subscribe.topics[0].qos = MQTT_QOS;
-    MqttClient_Subscribe(&client, &subscribe);
-}
-*/
-
-
-
-
-
-
-
-
-
-/* Step I: Publish to Topics */
-/*
-static void publish_to_topics(void) {
-    MqttPublish publish;
-    XMEMSET(&publish, 0, sizeof(MqttPublish));
-    publish.retain = 0;
-    publish.qos = MQTT_QOS;
-    publish.duplicate = 0;
-    publish.packet_id = mqtt_get_packetid();
-    publish.topic_name = (const uint8_t*)MQTT_PUBLISH_TOPIC;
-    publish.topic_name_len = (uint16_t)XSTRLEN(MQTT_PUBLISH_TOPIC);
-    publish.buffer = (uint8_t*)"Hello from Zephyr";
-    publish.total_len = (uint16_t)XSTRLEN("Hello from Zephyr");
-    MqttClient_Publish(&client, &publish);
-}
-*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* Step J: Wait for Messages */
-/*
-static void wait_for_messages(void) {
-    while (1) {
-        MqttClient_WaitMessage(&client, &message, MQTT_CMD_TIMEOUT_SEC);
-        k_sleep(K_MSEC(1000));
-    }
-}
-*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* Step K: Handle Messages */
-/*
-static void handle_messages(void) {
-    // This is done in the mqtt_msg_callback function
-}
-*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* Step L: Check for Commands */
-/*
-static bool check_for_commands(void) {
-    // Implement command checking logic if needed
-    return false;
-}
-*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* Step M: Disconnect if needed */
-/*
-static bool disconnect_needed(void) {
-    // Implement logic to decide if disconnection is needed
-    return false;
-}
-*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* Step N: Disconnect */
-/*
-static void mqtt_disconnect(void) {
-    MqttClient_Disconnect(&client);
-}
-*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* Step O: Cleanup Resources */
-/*
-static void cleanup_resources(void) {
-    wolfSSL_free(ssl);
-    wolfSSL_CTX_free(ctx);
-    wolfSSL_Cleanup();
-}
-*/
-
-
-
-
-
-
-
-
-
-
-
-/* MQTT Message Callback */
-/*
-static void mqtt_msg_callback(MqttClient *client, MqttMessage *msg, byte msg_new, byte msg_done) {
-    if (msg_new) {
-        printf("Received a message: %.*s\n", msg->topic_name_len, msg->topic_name);
-    }
-    if (msg_done) {
-        printf("Message done.\n");
-    }
-}
-*/
-
-
-
-/* Cleanup resources */
-static void cleanup_resources(void) {
-    if (ssl) {
-        wolfSSL_free(ssl);
-        ssl = NULL;
-    }
-    if (ssl_ctx) {
-        wolfSSL_CTX_free(ssl_ctx);
-        ssl_ctx = NULL;
-    }
-    wolfSSL_Cleanup();
-}
-
-
-
-
-
-
-
-
-
 int main(void) {
     printf("\nRunning wolfSSL example from the %s!\n", CONFIG_BOARD);
     
     /* Start up the network */
+    /*
     if (startNetwork() != 0) {
         printf("Network Initialization via DHCP Failed\n");
         return 1;
     }
-
-
-   LOG_INFO("Running wolfSSL example from the %s!", CONFIG_BOARD);
-
-    // Step A: Initialize Network
-    LOG_INFO("Step A: Initializing network context");
-    broker_init();
-
-    // Step B: Initialize MQTT Client
-    LOG_INFO("Step B: Initializing MQTT client");
-    mqtt_client_init_custom();
-
-    // Step C: Set MQTT Connection Parameters
-    LOG_INFO("Step C: Setting MQTT connection parameters");
-    set_mqtt_connection_params();
-
-    // Step D: Setup TLS for AWS IoT
-    LOG_INFO("Step D: Setting up TLS for AWS IoT");
-    if (tls_setup() != 0) {
-        LOG_ERROR("TLS setup failed");
+    */
+    set_time_using_ntp(resolve_hostname("pool.ntp.org"));
+    if (wolfSSL_Init() != WOLFSSL_SUCCESS) {
+        PRINTF("FAILED");
         return 1;
     }
+    mqttsimple_test();
 
-    // Step E: Connect via MqttClient_NetConnect
-    LOG_INFO("Step E: Connecting to MQTT broker");
-    if (mqtt_client_connect() != MQTT_CODE_SUCCESS) {
-        LOG_ERROR("Failed to connect to broker");
-        cleanup_resources();
-        return 1;
-    }
-/*
-    // Step F: Send MQTT Connect Packet
-    LOG_INFO("Step F: Sending MQTT connect packet");
-    rc = send_mqtt_connect_packet();
-    if (!is_connection_successful(rc)) {
-        LOG_ERROR("Failed to send connect packet, rc: %d", rc);
-        cleanup_resources();
-        return 1;
-    }
-
-    // Step G: Check Connection Successful
-    LOG_INFO("Step G: Checking if connection is successful");
-    if (!is_connection_successful(rc)) {
-        LOG_ERROR("MQTT connection failed, rc: %d", rc);
-        cleanup_resources();
-        return 1;
-    }
-
-    // Step H: Subscribe to Topics
-    LOG_INFO("Step H: Subscribing to topics");
-    subscribe_to_topics();
-
-    // Step I: Publish to Topics
-    LOG_INFO("Step I: Publishing to topics");
-    publish_to_topics();
-
-    // Step J: Wait for Messages
-    LOG_INFO("Step J: Waiting for messages");
-    wait_for_messages();
-
-    // Step L: Check for Commands
-    LOG_INFO("Step L: Checking for commands");
-    if (check_for_commands()) {
-        LOG_INFO("Command received, handling...");
-        // Implement command handling logic here if needed
-    }
-
-    // Step M: Disconnect if needed
-    LOG_INFO("Step M: Checking if disconnection is needed");
-    if (disconnect_needed()) {
-        LOG_INFO("Disconnecting from MQTT broker");
-        mqtt_disconnect();
-    }
-
-    // Step O: Cleanup Resources
-    LOG_INFO("Step O: Cleaning up resources");
-    cleanup_resources();
-*/
     return 0;
 }
