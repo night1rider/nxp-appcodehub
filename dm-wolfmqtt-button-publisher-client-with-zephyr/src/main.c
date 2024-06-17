@@ -378,7 +378,7 @@ static int mqtt_net_write(void *context, const byte* buf, int buf_len,
             rc, socket_get_error(*pSockFd));
         return MQTT_CODE_ERROR_NETWORK;
     }
-	PRINTF("EXIT MQTT NET CONNECT");
+	PRINTF("EXIT MQTT NET WRITE");
     return rc;
 }
 
