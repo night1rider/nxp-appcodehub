@@ -1,10 +1,10 @@
-# NXP Application Code Hub
-[<img src="https://mcuxpresso.nxp.com/static/icon/nxp-logo-color.svg" width="100"/>](https://www.nxp.com)
+# wolfSSL NXP Application Code Hub
 
-## Zephyr RTOS TLSv1.3 Hello Server FRDM-MCXN947 
+<a href="https://www.nxp.com"> <img src="https://mcuxpresso.nxp.com/static/icon/nxp-logo-color.svg" width="125" style="margin-bottom: 40px;" /> </a> <a href="https://www.wolfssl.com"> <img src="../Images/wolfssl_logo_300px.png" width="100" style="margin-bottom: 40px" align=right /> </a>
+
+## wolfSSL TLSv1.3 Hello Server using Zephyr RTOS
 
 This demo demostrate capabilities of new FRDM-MCXN947.  
-There has some variants that are divided on branches in [Application Code Hub](https://github.com/nxp-appcodehub)     
 
 ### Demo   
 Creating a simple server using the Zephyr RTOS and wolfSSL to utilize the networking capabilities of the FRDM-MCXN947 through its ethernet port.  
@@ -20,9 +20,10 @@ Creating a simple server using the Zephyr RTOS and wolfSSL to utilize the networ
 3. [Setup](#step3)
 4. [Verification](#step4)
 5. [Project Options](#step5)
-6. [FAQs](#step6) 
-7. [Support](#step7)
-8. [Release Notes](#step8)
+6. [Project Flow Chart](#step6)
+7. [FAQs](#step7) 
+8. [Support](#step8)
+9. [Release Notes](#step9)
 
 ## 1. Software<a name="step1"></a>
 - [MCUXpresso for VScode 1.5.61 or newer](https://www.nxp.com/products/processors-and-microcontrollers/arm-microcontrollers/general-purpose-mcus/lpc800-arm-cortex-m0-plus-/mcuxpresso-for-visual-studio-code:MCUXPRESSO-VSC?cid=wechat_iot_303216)
@@ -58,18 +59,13 @@ Creating a simple server using the Zephyr RTOS and wolfSSL to utilize the networ
 
 ## 3. Setup<a name="step3"></a>
 
-### 3.1 Step 1
-1. Open the MCUXpresso in VS Code.
+### 3.1 Import the Project and build
+1. Follow section 1: `Setup` in the top level [README](../README.md)
+2. Under the "Projects" tab, right click the project and choose "build selected", this should result in no errors. 
 
-[<img src="Images/Setup3-1.png" width="600"/>](Images/Setup3-1.png)
+[<img src="Images/Setup3-3.png" width="300"/>](Images/Setup3-3.png)
 
-2. Under the "QuickStart Panel" Tab select "Application Code Hub". Then search for this example, and select the folder you want to download it to.
-
-[<img src="Images/Setup3-2.png" width="600"/>](Images/Setup3-2.png)
-
-3. Under the "Projects" tab, right click the project and choose "build selected", this should result in no errors
-
-[<img src="Images/Setup3-3.png" width="600"/>](Images/Setup3-3.png)
+The project should be called `dm-wolfssl-tls-hello-server-with-zephyr`.
 
 
 ### 3.2 Connect hardware
@@ -187,10 +183,38 @@ If you want to change the port from the default `11111`
 
     [<img src="Images/ProjectOptions5-3-4.png" width="600"/>](Images/ProjectOptions5-3-4.png)
 
-## 6. FAQs<a name="step6"></a>
+
+## 6. Project Flowchart<a name="step9"></a>
+### Overview
+
+```mermaid
+flowchart TD
+    A[Start Program] --> B[Print Start Message]
+    B --> C{Start Network}
+    C -->|Success| D{Start Server}
+    C -->|Failure| E[Exit with Error]
+    D -->|Success| F[Run Server Loop]
+    D -->|Failure| G[Exit with Error]
+    F --> H{Accept Client Connections}
+    H -->|Success| I[Handle Client]
+    H -->|Failure| J[Exit with Error]
+    I --> K{Read Client Data}
+    K -->|Success| L[Process Data]
+    K -->|Failure| M[Exit with Error]
+    L --> N{Check for Shutdown}
+    N -->|Yes| O[Shutdown Server]
+    N -->|No| P[Send Reply to Client]
+    P --> Q[Close Client Connection]
+    Q --> H
+    O --> Q
+```
+
+
+
+## 7. FAQs<a name="step7"></a>
 No FAQs have been identified for this project.
 
-## 7. Support<a name="step7"></a>
+## 8. Support<a name="step8"></a>
 
 #### Project Metadata
 <!----- Boards ----->
@@ -211,7 +235,7 @@ Questions regarding the content/correctness of this example can be entered as Is
 
 
 
-## 8. Release Notes<a name="step6"></a>
+## 9. Release Notes<a name="step9"></a>
 | Version | Description / Update                           | Date                        |
 |:-------:|------------------------------------------------|----------------------------:|
 | 1.0     | Initial release on Application Code Hub        | TBD|
