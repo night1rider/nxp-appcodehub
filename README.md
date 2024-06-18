@@ -1,13 +1,6 @@
 # wolfSSL NXP Application Code Hub
 
-<div style="display: flex; justify-content: space-between; align-items: center;">
-  <a href="https://www.nxp.com">
-    <img src="https://mcuxpresso.nxp.com/static/icon/nxp-logo-color.svg" width="100"/>
-  </a>
-  <a href="https://www.wolfssl.com/">
-    <img src="Images/wolfssl_logo_300px.png" width="100"/>
-  </a>
-</div>
+<a href="https://www.nxp.com"> <img src="https://mcuxpresso.nxp.com/static/icon/nxp-logo-color.svg" width="125" style="margin-bottom: 40px;" /> </a> <a href="https://www.wolfssl.com"> <img src="Images/wolfssl_logo_300px.png" width="100" style="margin-bottom: 40px" align=right /> </a>
 
 This Repo is currently a work in progress and some items are placeholders.
 
