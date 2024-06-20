@@ -1,0 +1,10 @@
+sample:
+  description: A hello server that uses the ethernet avaliable for the FRDM-MCXN947
+  name: RGB Light Server using SSH
+tests:
+  sample.basic.wolfssh:
+    tags:
+      - Ethernet
+      - Networking
+      - SSH
+      - GPIO
