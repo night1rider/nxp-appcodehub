@@ -35,6 +35,15 @@ mcuxpresso-tools.json created.
 settings.json created.
 ```
 
+If you want to specify another board like `mimxrt1060_evkb`
+
+simply add a 2nd argument to the script call like:
+MacOS and Linux:
+```
+cd \path\to\nxp-appcodehub
+./setup.sh dm-wolfssl-tls-hello-server-with-zephyr mimxrt1060_evkb
+```
+
 This creates the necassary base files that the plugin needs to import the project correctly.
 
 ### 2. Import the Project
