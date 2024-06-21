@@ -30,6 +30,13 @@ settings.json created.
 
 This creates the necassary base files that the plugin needs to import the project correctly.
 
+The default board is the FRDM-MCXN947, if you wanted to use a different board like the `mimxrt1060_evkb`, then add a second argument to the command like so:
+```
+./setup.sh dm-wolfmqtt-button-publisher-client-with-zephyr mimxrt1060_evkb
+```
+
+You may need to double check the `proj.conf` settings of the project to disable and/or enable drivers specific for the board. 
+
 ### 2. Import the Project
 
 Assuming you have the necassary software describe in the readme for the given 

@@ -8,12 +8,32 @@ sanitize_directory() {
     echo "$sanitized_dir"
 }
 
+# Function to set the default board ID or use the provided one
+set_board_id() {
+    if [ -z "$2" ]; then
+        board_id="frdm_mcxn947/mcxn947/cpu0"
+    else
+        board_id="$2"
+    fi
+}
+
+# Function to prompt the user and check the response
+prompt_user() {
+    local prompt_message="$1"
+    local response
+    read -p "$prompt_message (y/n): " response
+    if [[ "$response" != "y" && "$response" != "Y" ]]; then
+        echo "Operation cancelled."
+        exit 1
+    fi
+}
+
 # Create the .vscode directory if it doesn't exist
 create_vscode_directory() {
     local subfolder="$1"
     if [ -d "$subfolder/.vscode" ]; then
-        echo "Error: The directory '$subfolder/.vscode' already exists."
-        exit 1
+        prompt_user "The directory '$subfolder/.vscode' already exists. Do you want to remake it?"
+        rm -rf "$subfolder/.vscode"
     fi
     mkdir "$subfolder/.vscode"
     echo "Created .vscode directory in $subfolder."
@@ -31,7 +51,7 @@ create_cmake_kits() {
       "ZEPHYR_SDK_INSTALL_DIR": ""
     },
     "cmakeSettings": {
-      "BOARD": "frdm_mcxn947/mcxn947/cpu0"
+      "BOARD": "$board_id"
     },
     "keep": true
   }
@@ -85,7 +105,7 @@ create_launch_json() {
         "mcuxStopAtSymbol": "main",
         "mcuxSerialNumber": "",
         "mcuxAttach": "false",
-        "mcuxRemoteProbeType": "",
+        "mcuxRemoteProbeType": ""
       },
       "logging": {
         "engineLogging": false
@@ -115,7 +135,7 @@ create_mcuxpresso_tools() {
   },
   "projectType": "zephyr-workspace",
   "sdk": {
-    "boardId": "frdm_mcxn947/mcxn947/cpu0",
+    "boardId": "$board_id",
     "version": "",
     "path": ""
   }
@@ -153,6 +173,9 @@ create_vscode_configs() {
         exit 1
     fi
 
+    # Set the board ID
+    set_board_id "$@"
+
     # Check if the input directory exists
     if [ ! -d "$subfolder" ]; then
         echo "Error: The directory '$subfolder' does not exist."
@@ -167,6 +190,5 @@ create_vscode_configs() {
     create_settings_json "$subfolder"
 }
 
-# Call the main function with the first script argument
-create_vscode_configs "$1"
-
+# Call the main function with the script arguments
+create_vscode_configs "$@"
