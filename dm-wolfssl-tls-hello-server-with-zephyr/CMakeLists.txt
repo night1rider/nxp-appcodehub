@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.20.0)
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
-project(MCXN947-TLS-HelloServer-wolfSSL)
+project(wolfssl-tls-hello-server)
 
 # Check if the symbolic link __repo__ exists
 if(NOT EXISTS "${CMAKE_SOURCE_DIR}/__repo__")
