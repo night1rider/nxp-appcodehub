@@ -1,0 +1,26 @@
+<data:item xmlns:data="data" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="data ../../xsd/alp.xsd" type="demo" format="zephyr" versionSchema="1.0.0" name="wolfmqtt publisher client with zephyr" uuid="3968491f-d621-4244-a4ce-89e2ad02c54a">
+    <display_title>
+        wolfSSL MQTT AWS Test using Zephyr RTOS
+    </display_title>
+    <overview>
+        <![CDATA[This demo demostrate capabilities of new FRDM-MCXN947.<br><a href="https://github.com/wolfSSL/nxp-appcodehub/tree/main/dm-wolfmqtt-publisher-client-with-zephyr#demo"></a>Simple connects to an AWS broker subscribes, and publishes a message.]]>
+    </overview>
+    <toolchains>
+        <toolchain name="vscode"></toolchain>
+    </toolchains>
+    <families>
+        <family name="mcx"></family>
+    </families>
+    <nxp_compatible_hw>
+        <hw id="FRDM-MCXN947"></hw>
+    </nxp_compatible_hw>
+    <peripherals>
+        <peripheral name="uart"></peripheral>
+        <peripheral name="ethernet"></peripheral>
+    </peripherals>
+    <categories>
+        <category name="cc_devices"></category>
+        <category name="wireless_connectivity"></category>
+        <category name="networking"></category>
+    </categories>
+</data:item>
