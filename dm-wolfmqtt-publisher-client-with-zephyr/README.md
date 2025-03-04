@@ -4,12 +4,12 @@
 
 ## wolfSSL MQTT AWS Test using Zephyr RTOS
 
-This demo demostrate capabilities of new FRDM-MCXN947.  
+This demo demonstrates the capabilities of the new FRDM-MCXN947.
 
 ### Demo   
-Simple conencts to a AWS broker subscribes, and publishes a message.  
+Simply connects to an AWS broker, subscribes, and publishes a message.
 
-*This is currently not a stable demo on the FRDM-MCXN947 Board*
+*This is currently not a stable demo on the FRDM-MCXN947 Board.*
 
 #### Boards:        FRDM-MCXN947
 #### Categories:    RTOS, Zephyr, Networking
@@ -27,7 +27,7 @@ Simple conencts to a AWS broker subscribes, and publishes a message.
 8. [Release Notes](#step8)
 
 ## 1. Software<a name="step1"></a>
-- [MCUXpresso for VScode 1.5.61 or newer](https://www.nxp.com/products/processors-and-microcontrollers/arm-microcontrollers/general-purpose-mcus/lpc800-arm-cortex-m0-plus-/mcuxpresso-for-visual-studio-code:MCUXPRESSO-VSC?cid=wechat_iot_303216)
+- [MCUXpresso for VSCode 1.5.61 or newer](https://www.nxp.com/products/processors-and-microcontrollers/arm-microcontrollers/general-purpose-mcus/lpc800-arm-cortex-m0-plus-/mcuxpresso-for-visual-studio-code:MCUXPRESSO-VSC?cid=wechat_iot_303216)
 
 - [Zephyr Setup](https://docs.zephyrproject.org/latest/develop/getting_started/index.html)
     - [wolfSSL as a Module added to Zephyr](https://github.com/wolfSSL/wolfssl/blob/master/zephyr/README.md)
@@ -46,48 +46,43 @@ Simple conencts to a AWS broker subscribes, and publishes a message.
     - gcc
     - git 
 
+ - Zephyr:
+    - SDK 0.16.8
+    - Version 4.0.0
 
 ## 2. Hardware<a name="step2"></a>
-- [FRDM-MCXN947.](https://www.nxp.com/products/processors-and-microcontrollers/arm-microcontrollers/general-purpose-mcus/mcx-arm-cortex-m/mcx-n94x-and-n54x-mcus-with-dual-core-arm-cortex-m33-eiq-neutron-npu-and-edgelock-secure-enclave-core-profile:MCX-N94X-N54X)   
+- [FRDM-MCXN947](https://www.nxp.com/products/processors-and-microcontrollers/arm-microcontrollers/general-purpose-mcus/mcx-arm-cortex-m/mcx-n94x-and-n54x-mcus-with-dual-core-arm-cortex-m33-eiq-neutron-npu-and-edgelock-secure-enclave-core-profile:MCX-N94X-N54X)   
 [<img src="Images/FRDM-MCXN947-TOP.jpg" width="300"/>](Images/FRDM-MCXN947-TOP.jpg)
-- USB Type-C cable.
-- Ethernet Cable.
+- USB Type-C cable
+- Ethernet cable
 - Networking/Router
-- Personal Computer.
-
+- Personal Computer
 
 ## 3. Setup<a name="step3"></a>
 
-### 3.1 Import the Project and build
-1. Follow section 1: `Setup` in the top level [README](../README.md)
-2. Under the "Projects" tab, right click the project and choose "build selected", this should result in no errors. 
+### 3.1 Import the Project and Build
+1. Follow section 1: `Setup` in the top-level [README](../README.md).
+2. Under the "Projects" tab, right-click the project and choose "Build Selected." This should result in no errors.
 
     [<img src="Images/Setup3-1.png" width="400"/>](Images/Setup3-1.png)
 
 The project should be called `dm-wolfmqtt-publisher-client-with-zephyr`.
 
-
-### 3.2 Connect hardware
-1. Connect the FRDM-MCXN947 to you computer with the provided USB-C Cable
-
-2. Connect the FRDM-MCXN947 to your network with a ethernet cable
+### 3.2 Connect Hardware
+1. Connect the FRDM-MCXN947 to your computer with the provided USB-C cable.
+2. Connect the FRDM-MCXN947 to your network with an Ethernet cable.
 
 ### 3.4 Program and Run the Server
-1. Flash the .elf to FRDM-MCXN947, Can be done with right clicking the project and choosing to "flash the selected target"
-2. Connect to the Serial Output of the FRDM-MCXN947 via:
-    - Screen Command - `screen /dev/tty"MCXN-Port 115200`
-    - Some Serial Terminal you are familiar with 
-3. Push reset button on the FRDM-MCXN947 board and view the startup message and MQTT demo.
+1. Flash the `.elf` file to FRDM-MCXN947. This can be done by right-clicking the project and choosing "Flash the Selected Target."
+2. Connect to the serial output of the FRDM-MCXN947 via:
+    - Screen Command - `screen /dev/tty"MCXN-Port 115200"`
+    - Any serial terminal you are familiar with.
+3. Press the reset button on the FRDM-MCXN947 board and view the startup message and MQTT demo.
 
     [<img src="Images/Results.png" width="500"/>](Images/Results.png)
 
-
-
-
-
 ## 4. Project Options<a name="step4"></a>
-Currently there are no extra project options.
-
+Currently, there are no extra project options.
 
 ## 5. Project Flowchart<a name="step5"></a>
 ### Overview
@@ -194,20 +189,17 @@ No FAQs have been identified for this project.
 
 <!----- Categories ----->
 
-
 <!----- Peripherals ----->
 [![Peripheral badge](https://img.shields.io/badge/Peripheral-UART-yellow)](https://github.com/search?q=org%3Anxp-appcodehub+uart+in%3Areadme&type=Repositories) [![Peripheral badge](https://img.shields.io/badge/Peripheral-ETHERNET-yellow)](https://github.com/search?q=org%3Anxp-appcodehub+ethernet+in%3Areadme&type=Repositories)
 
 <!----- Toolchains ----->
 [![Toolchain badge](https://img.shields.io/badge/Toolchain-VS%20CODE-orange)](https://github.com/search?q=org%3Anxp-appcodehub+vscode+in%3Areadme&type=Repositories)
 
-Questions regarding the content/correctness of this example can be entered as Issues within this GitHub repository.
+Questions regarding the content or correctness of this example can be entered as Issues within this GitHub repository.
 
->**Warning**: For more general technical questions regarding NXP Microcontrollers and the difference in expected funcionality, enter your questions on the [NXP Community Forum](https://community.nxp.com/)
-
-
+>**Warning**: For more general technical questions regarding NXP Microcontrollers and differences in expected functionality, enter your questions on the [NXP Community Forum](https://community.nxp.com/).
 
 ## 8. Release Notes<a name="step8"></a>
 | Version | Description / Update                           | Date                        |
-|:-------:|------------------------------------------------|----------------------------:|
-| 1.0     | Initial release on Application Code Hub        | TBD|
+|:-------:|-----------------------------------------------|----------------------------:|
+| 1.0     | Initial release on Application Code Hub      | TBD |

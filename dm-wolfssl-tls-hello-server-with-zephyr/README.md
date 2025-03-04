@@ -4,10 +4,10 @@
 
 ## wolfSSL TLSv1.3 Hello Server using Zephyr RTOS
 
-This demo demostrate capabilities of new FRDM-MCXN947.  
+This demo demonstrates capabilities of new FRDM-MCXN947.  
 
-### Demo   
-Creating a simple server using the Zephyr RTOS and wolfSSL to utilize the networking capabilities of the FRDM-MCXN947 through its ethernet port.  
+### Demo
+Creating a simple server using the Zephyr RTOS and wolfSSL to utilize the networking capabilities of the FRDM-MCXN947 through its Ethernet port.
 
 #### Boards:        FRDM-MCXN947
 #### Categories:    RTOS, Zephyr, Networking
@@ -44,6 +44,13 @@ Creating a simple server using the Zephyr RTOS and wolfSSL to utilize the networ
     - make
     - gcc
     - git 
+
+- Windows:
+    - Currently Unsupported
+
+ - Zephyr:
+    - SDK 0.16.8
+    - Version 4.0.0
 
 - Optional Software:
     - Wireshark
@@ -82,7 +89,7 @@ The project should be called `dm-wolfssl-tls-hello-server-with-zephyr`.
 
     [<img src="Images/Setup3-4.png" width="300"/>](Images/Setup3-4.png)
 
-4. In a terminal go to the directory /path/to/project/__repo__/modules/crypto/wolfssl and then use the client application.
+4. In a terminal go to the directory `/path/to/project/__repo__/modules/crypto/wolfssl` and then use the client application.
 `./examples/client/client -h <noted ip address> -v 4`
 
 This should produce the following results:
@@ -107,7 +114,7 @@ This should produce the following results:
 
     [<img src="Images/Verification4-2-2.png" width="500"/>](Images/Verification4-2-2.png)
 
-### 4.3 Verifing the Connection Type
+### 4.3 Verifying the Connection Type
 
 1. Run the client hello from step: [3.4.4](#step3) via 
 
@@ -123,7 +130,7 @@ It should look similar to this example.
 
 ## 5. Project Options<a name="step5"></a>
 ### 5.1 Setting up a static IPv4 on Zephyr
-By default the project is setup to use a DHCP Server, this section will show how to setup a static IP. Please make sure you chose an IP for the device that will not cause a IP confilct on your network.
+By default the project is setup to use a DHCP Server, this section will show how to setup a static IP. Please make sure you chose an IP for the device that will not cause a IP conflict on your network.
 
 1. In [src/main.c](src/main.c), look for the following section.
 
@@ -139,14 +146,14 @@ By default the project is setup to use a DHCP Server, this section will show how
 
 3. Set the `STATIC_IPV4_ADDR` macro to your desired IP, by default it is set to `192.168.1.70`. Make sure the IP you choose does not cause a conflict on your network.
 
-4. Set the `STATIC_IPV4_GATEWAY` macro to your network's gateway. Usally this is `192.168.1.1` on home networks, however this could not always be the case. This is usally the IP of your primary network router.
+4. Set the `STATIC_IPV4_GATEWAY` macro to your network's gateway. Usually this is `192.168.1.1` on home networks, however this could not always be the case. This is usually the IP of your primary network router.
 
 5. Set the `STATIC_IPV4_NETMASK` macro to your needs. Generally `255.255.255.0` for most use cases.
 
 6. Rebuild the project and flash the device. The IP the device reports back should be the `STATIC_IPV4_ADDR` value you set.
 
 ### 5.2 Changing the project to TLSv2
-If you want to change the version of TLS to v2 for the project. This can useful for debugging and education to see how a TLS handshake is preformed between devices.
+If you want to change the version of TLS to v2 for the project. This can useful for debugging and education to see how a TLS handshake is performed between devices.
 
 1. In [src/main.c](src/main.c) look for the following section
 
@@ -166,7 +173,7 @@ If you want to change the version of TLS to v2 for the project. This can useful 
 
     [<img src="Images/ProjectOptions5-2-4_ClientLog.png" width="400"/>](Images/ProjectOptions5-2-4_ClientLog.png)
 
-5. If you preform [Verification](#step4) via Wireshark it should produce the following logs:
+5. If you perform [Verification](#step4) via Wireshark it should produce the following logs:
 
     [<img src="Images/ProjectOptions5-2-5.png" width="600"/>](Images/ProjectOptions5-2-5.png)
 
@@ -231,7 +238,7 @@ No FAQs have been identified for this project.
 
 Questions regarding the content/correctness of this example can be entered as Issues within this GitHub repository.
 
->**Warning**: For more general technical questions regarding NXP Microcontrollers and the difference in expected funcionality, enter your questions on the [NXP Community Forum](https://community.nxp.com/)
+>**Warning**: For more general technical questions regarding NXP Microcontrollers and the difference in expected functionality, enter your questions on the [NXP Community Forum](https://community.nxp.com/)
 
 
 
