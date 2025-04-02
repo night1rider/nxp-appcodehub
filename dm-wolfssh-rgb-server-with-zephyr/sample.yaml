@@ -1,5 +1,5 @@
 sample:
-  description: A hello server that uses the ethernet avaliable for the FRDM-MCXN947
+  description: A RGB light server using SSH protocol on Zephyr
   name: RGB Light Server using SSH
 tests:
   sample.basic.wolfssh:
