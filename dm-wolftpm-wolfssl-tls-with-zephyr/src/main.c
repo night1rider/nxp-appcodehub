@@ -525,6 +525,7 @@ int startServer(void)
     }
     
     /* Prompt for PK callbacks */
+#if 0
     printk("Use PK callbacks? (y/n, default: n): ");
     ret = poll_response(input, sizeof(input));
     printk("Input: %s\n", input);
@@ -536,7 +537,11 @@ int startServer(void)
     else {
         printk("Using crypto callbacks (default)\n");
     }
-    
+#else
+    /* Always use PK callbacks for tpm example */
+    strcpy(pkOption, "-pk");
+#endif
+
     /* Prompt for loop mode */
     printk("Run in loop mode? (y/n, default: n): ");
     ret = poll_response(input, sizeof(input));

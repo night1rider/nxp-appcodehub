@@ -368,13 +368,14 @@ extern "C" {
 
     #define WOLFSSL_SP_ARM_CORTEX_M_ASM
 
+#if 1
     #define WOLFSSL_ARMASM
     #define WOLFSSL_ARMASM_INLINE
     #define WOLFSSL_ARMASM_NO_HW_CRYPTO
     #define WOLFSSL_ARMASM_NO_NEON
     #define WOLFSSL_ARM_ARCH 7
     #define WOLFSSL_ARMASM_THUMB2
-
+#endif
 
     #if 0
         /* optional speedup with inline assembly */

@@ -182,6 +182,9 @@ The demo provides an interactive shell with the following command options:
 - Resets the TPM to factory state
 - Removes all keys and data stored in the TPM
 - Use with caution as this operation cannot be undone
+- Use when having issues with the TPM Demo such as: 
+    - `TPM_RC_SESSION_MEMORY` which indicates the TPM has run out of memory for storing active sessions.
+- When used you will want to regenerate keys and certs as well
 
 ### `-server`
 **Description:** Start a TLSv1.3 server that uses TPM for cryptographic operations.
@@ -190,7 +193,6 @@ The demo provides an interactive shell with the following command options:
   - RSA (default)
   - ECC
 - Parameter encryption options
-- Public key callback options
 - Server loop options
 - Self-signed certificate generation
 - Custom port configuration
@@ -247,8 +249,8 @@ Finally, start the TLS server using the key and certificate:
 1. Run the `-server` command
 2. Select RSA key type (option 1)
 3. Choose "1" for AES parameter encryption
-4. Select "y" for PK callbacks
-5. Choose "y" to generate a self-signed certificate
+4. Choose "y" to generate a self-signed certificate
+5. Run in loop mode? (y/n, default: n): n - Will keep device running the basic server if y is selected
 6. Leave port option empty to use the default port (11111)
 
 The server will start and listen for incoming connections. You can connect to it using a TLS client as described in section 4.3.
