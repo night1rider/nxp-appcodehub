@@ -11,6 +11,8 @@ This interactive demo showcases various TPM capabilities using Zephyr RTOS and w
 
 **Note**: The MCXN947 does not come with the SD Card slot populated you will need to solder this onto the Board for the demo to work if you want to use this device.
 
+**Note**: This example as of 05/16/2025 requires the master version of wolfSSL and wolfTPM to properly work, see west.yml in this projects directory.
+
 #### Boards:        FRDM-MCXN947
 #### Categories:    RTOS, Zephyr, Security, TPM, Networking
 #### Peripherals:   UART, ETHERNET, TPM, SD Card
@@ -45,7 +47,11 @@ This interactive demo showcases various TPM capabilities using Zephyr RTOS and w
     - libtool
     - make
     - gcc
-    - git 
+    - git
+
+- Zephyr:
+    - SDK 0.17.0
+    - Version 4.1.0
 
 ## 2. Hardware<a name="step2"></a>
 - [FRDM-MCXN947.](https://www.nxp.com/products/processors-and-microcontrollers/arm-microcontrollers/general-purpose-mcus/mcx-arm-cortex-m/mcx-n94x-and-n54x-mcus-with-dual-core-arm-cortex-m33-eiq-neutron-npu-and-edgelock-secure-enclave-core-profile:MCX-N94X-N54X)   
