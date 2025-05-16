@@ -22,10 +22,9 @@ This interactive demo showcases various TPM capabilities using Zephyr RTOS and w
 3. [Setup](#step3)
 4. [Project Features](#step4)
 5. [Project Options](#step5)
-6. [Project Flow Chart](#step6)
-7. [FAQs](#step7) 
-8. [Support](#step8)
-9. [Release Notes](#step9)
+6. [FAQs](#step7) 
+7. [Support](#step8)
+8. [Release Notes](#step9)
 
 ## 1. Software<a name="step1"></a>
 - [MCUXpresso for VScode 1.5.61 or newer](https://www.nxp.com/products/processors-and-microcontrollers/arm-microcontrollers/general-purpose-mcus/lpc800-arm-cortex-m0-plus-/mcuxpresso-for-visual-studio-code:MCUXPRESSO-VSC?cid=wechat_iot_303216)
@@ -101,7 +100,7 @@ We provide a convenient script to set up your SD card properly.
 You will need to format the SD Card to the FAT32 filesystem
 
 ### 3.3 Connect Hardware
-1. Plug in your TPM to the corresponding ports on the mikroBus Headers (currently the demo ony support I2C TPM's).
+1. Plug in your TPM to the corresponding ports on the mikroBus Headers (currently the demo only supports I2C TPM's).
 
     [<img src="Images/mikroBus-layout.png" width="500"/>](Images/mikroBus-layout.png)
 
@@ -114,7 +113,7 @@ You will need to format the SD Card to the FAT32 filesystem
 4. Connect an Ethernet cable to your network (required for TLS server functionality)
 
 ### 3.4 Program and Run the Demo
-1. Flash the .elf to FRDM-MCXN947, Can be done with right clicking the project and choosing to `flash the selected target`
+1. Flash the .elf to FRDM-MCXN947, Can be done by right clicking the project and choosing to `flash the selected target`
 2. Connect to the Serial Output of the FRDM-MCXN947 via:
     - Screen Command - `screen /dev/tty"MCXN-Port" 115200`
     - Some Serial Terminal you are familiar with 
@@ -267,7 +266,7 @@ By following these three steps manually, you have complete control over each par
 6. Make sure the server is running on zephyr via the `-server` or `-demo` command
 7. Connect with the client
     ```
-    ./example/client/client -h <ip of zephyr device as displaced at boot> -A <path/to/cert.pem/you/saved> -w
+    ./example/client/client -h <ip of zephyr device as displayed at boot> -A <path/to/cert.pem/you/saved> -w
     ```
 
 
@@ -327,9 +326,9 @@ By default the project is set up to use a DHCP Server, this section will show ho
 
 Questions regarding the content/correctness of this example can be entered as Issues within this GitHub repository.
 
->**Warning**: For more general technical questions regarding NXP Microcontrollers and the difference in expected funcionality, enter your questions on the [NXP Community Forum](https://community.nxp.com/)
+>**Warning**: For more general technical questions regarding NXP Microcontrollers and the difference in expected functionality, enter your questions on the [NXP Community Forum](https://community.nxp.com/)
 
-## 9. Release Notes<a name="step9"></a>
+## 8. Release Notes<a name="step9"></a>
 | Version | Description / Update                           | Date                        |
 |:-------:|------------------------------------------------|----------------------------:|
 | 1.0     | Initial release on Application Code Hub        | TBD|
