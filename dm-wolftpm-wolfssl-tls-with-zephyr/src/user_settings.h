@@ -167,7 +167,7 @@ extern "C" {
     #define WOLFSSL_ECDSA_DETERMINISTIC_K_VARIANT
 #endif
 
-#define WOLFSSL_OLD_PRIME_CHECK /* Use faster DH prime checking */
+#define WOLFSSL_OLD_PRIME_CHECK /* Use faster prime checking */
 
 
 /* RSA */
@@ -384,15 +384,16 @@ extern "C" {
 
 #ifdef CONFIG_WOLFCRYPT_ARMASM
     #define WOLFSSL_ARMASM
-    #define WOLFSSL_NO_HASH_RAW
-    #define WOLFSSL_ARMASM_INLINE /* use inline .c versions */
+    #define WOLFSSL_ARMASM_INLINE
+    #define WOLFSSL_ARMASM_NO_HW_CRYPTO
     #define WOLFSSL_ARMASM_NO_NEON
 
-    /* Default is ARMv8 */
-    #if 0
+    #ifdef CONFIG_WOLFCRYPT_ARMASM_THUMB2
         #define WOLFSSL_ARMASM_THUMB2
     #endif
-    #if 0 /* ARMv7 */
+
+    /* Default is ARMv8 */
+    #if 1 /* ARMv7 */
         #define WOLFSSL_ARM_ARCH 7
         #define WOLFSSL_ARMASM_NO_HW_CRYPTO /* enable if processor does not support aes/sha instructions */
     #endif

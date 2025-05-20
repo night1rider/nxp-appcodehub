@@ -86,7 +86,7 @@
 
 /* Use DHCP auto ip assignment or static assignment */
 #ifndef  DHCP_ON
-    #define DHCP_ON 1   /* Set to true (1) if you want auto assignment ip, */
+    #define DHCP_ON 0   /* Set to true (1) if you want auto assignment ip, */
                         /* set false (0) for staticly define. */
                         /* Make sure to avoid IP conflicts on the network you */
                         /* assign this to, check the defaults before using. */
