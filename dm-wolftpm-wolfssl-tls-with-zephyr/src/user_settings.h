@@ -149,21 +149,21 @@ extern "C" {
 /* ECC */
 #if 1
     #define HAVE_ECC
-    //#define ECC_USER_CURVES      /* Enable only ECC curves specific */
+    #define ECC_USER_CURVES      /* Enable only ECC curves specific */
     #undef  NO_ECC256            /* Enable SECP256R1 only (on by default) */
     #define ECC_TIMING_RESISTANT /* Enable Timing Resistance */
 
     //#define ECC_SHAMIR         /* Optional ECC calculation speed improvement if not using SP implementation */
-    #define WOLFSSL_CUSTOM_CURVES /* enable other curves (not just prime) */
+    //#define WOLFSSL_CUSTOM_CURVES /* enable other curves (not just prime) */
     //#define HAVE_ECC_SECPR2
     //#define HAVE_ECC_SECPR3
     //#define HAVE_ECC_BRAINPOOL
     //#define HAVE_ECC_KOBLITZ
     //#define HAVE_ECC_CDH /* Co-factor */
-    #define HAVE_COMP_KEY /* Compressed key support */
+    //#define HAVE_COMP_KEY /* Compressed key support */
     //#define FP_ECC /* Fixed point caching - speed repeated operations against same key */
-    #define HAVE_ECC_ENCRYPT
-    #define WOLFCRYPT_HAVE_ECCSI
+    //#define HAVE_ECC_ENCRYPT
+    //#define WOLFCRYPT_HAVE_ECCSI
     #define WOLFSSL_ECDSA_DETERMINISTIC_K_VARIANT
 #endif
 
@@ -257,7 +257,7 @@ extern "C" {
 /* AES-GCM */
 #if 1
     #define HAVE_AESGCM
-    #define GCM_SMALL /* GCM Method: GCM_TABLE_4BIT, GCM_SMALL, GCM_WORD32 or GCM_TABLE */
+    #define GCM_TABLE_4BIT /* GCM Method: GCM_TABLE_4BIT, GCM_SMALL, GCM_WORD32 or GCM_TABLE */
     //#define WOLFSSL_AESGCM_STREAM
 #endif
 //#define HAVE_AES_DECRYPT
@@ -366,18 +366,7 @@ extern "C" {
     //#define WOLFSSL_SP_NO_MALLOC /* disable heap in wolf/SP math */
     //#define SP_DIV_WORD_USE_DIV /* no div64 */
 
-    #define WOLFSSL_SP_ARM_CORTEX_M_ASM
-
-#if 1
-    #define WOLFSSL_ARMASM
-    #define WOLFSSL_ARMASM_INLINE
-    #define WOLFSSL_ARMASM_NO_HW_CRYPTO
-    #define WOLFSSL_ARMASM_NO_NEON
-    #define WOLFSSL_ARM_ARCH 7
-    #define WOLFSSL_ARMASM_THUMB2
-#endif
-
-    #if 0
+    #if 1
         /* optional speedup with inline assembly */
         #define WOLFSSL_SP_ARM_CORTEX_M_ASM /* Cortex-M3+ */
         //#define WOLFSSL_SP_ARM_THUMB_ASM    /* Cortex-M0+ thumb */
@@ -400,7 +389,9 @@ extern "C" {
     #define WOLFSSL_ARMASM_NO_NEON
 
     /* Default is ARMv8 */
-
+    #if 0
+        #define WOLFSSL_ARMASM_THUMB2
+    #endif
     #if 0 /* ARMv7 */
         #define WOLFSSL_ARM_ARCH 7
         #define WOLFSSL_ARMASM_NO_HW_CRYPTO /* enable if processor does not support aes/sha instructions */
@@ -425,7 +416,7 @@ extern "C" {
 #ifdef CONFIG_WOLFSSL_DEBUG
     #define DEBUG_WOLFSSL
 #else
-    #if 1
+    #if 0
         #define NO_ERROR_STRINGS
     #endif
 #endif
@@ -452,8 +443,6 @@ extern "C" {
 #define WOLFTPM_CRYPTOCB
 #define WOLF_CRYPTO_CB
 #define WC_TEST_NO_CRYPTOCB_SW_TEST
-#define WOLFSSL_PUBLIC_MP
-
 
 
 #define HAVE_RSA             // Enable RSA support

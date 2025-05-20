@@ -298,7 +298,11 @@ By default the project is set up to use a DHCP Server, this section will show ho
 
 5. Set the `STATIC_IPV4_NETMASK` macro to your needs. Generally `255.255.255.0` for most use cases.
 
-6. Rebuild the project and flash the device.
+6. Set the `NO_INTERNET` macro to `0` to enable NTP and DNS resolution. This will setup the device to use the NTP server `pool.ntp.org` and DNS server `8.8.8.8` to get the current date and time.
+
+7. Set the `NO_INTERNET` macro to `1` to disable NTP and DNS resolution. This will setup the device to use the date and time manually set in the `set_time_manually` function. Time is set to 1st January 2025 12:00:00 by default.
+
+8. Rebuild the project and flash the device.
 
 ## 6. FAQs<a name="step7"></a>
 1. **Q: Why is my SD card not recognized?**
