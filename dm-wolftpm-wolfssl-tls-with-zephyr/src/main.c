@@ -86,7 +86,7 @@
 
 /* Use DHCP auto ip assignment or static assignment */
 #ifndef  DHCP_ON
-    #define DHCP_ON 0   /* Set to true (1) if you want auto assignment ip, */ 
+    #define DHCP_ON 1   /* Set to true (1) if you want auto assignment ip, */
                         /* set false (0) for staticly define. */
                         /* Make sure to avoid IP conflicts on the network you */
                         /* assign this to, check the defaults before using. */
@@ -95,7 +95,7 @@
 
 #if DHCP_ON == 0
 /* Define Static IP, Gateway, and Netmask */
-    #define STATIC_IPV4_ADDR  "192.168.0.44"
+    #define STATIC_IPV4_ADDR    "192.168.0.44"
     #define STATIC_IPV4_GATEWAY "192.168.0.1"
     #define STATIC_IPV4_NETMASK "255.255.255.0"
 #endif
@@ -106,9 +106,9 @@
 #endif
 #endif
 
-/* Set the TLS Version Currently only 2 or 3 is avaliable for this */
-/* application, defaults to TLSv3 */
-#undef TLS_VERSION
+/* Set the TLS Version Currently only 2 or 3 is available for this */
+/* application, defaults to TLSv1.3 */
+#undef  TLS_VERSION
 #define TLS_VERSION 3
 
 /* This just sets up the correct function for the application via macro's*/
@@ -117,8 +117,8 @@
     #define TLS_METHOD wolfTLSv1_3_server_method()
 #elif TLS_VERSION == 2
     #define TLS_METHOD wolfTLSv1_2_server_method()
-#else 
-    #define TLS_METHOD wolfTLSv1_3_server_method()
+#else
+    #define TLS_METHOD wolfSSLv23_server_method()
 #endif
 
 #if NO_INTERNET == 0
@@ -186,7 +186,8 @@ int main(void)
         /* If NO_INTERNET is true, we will set the time manually */
         set_time_manually(1, 1, 2025, 12, 0, 0); /* Set the time to 1st January 2025 12:00:00 */
     #endif
-
+    /* Sleep to allow networking to initialize fully */
+    /* Sometimes devices seem to not be fully initialized */
     k_msleep(5000);
     list_of_commands();
 
@@ -319,7 +320,7 @@ int runWolfcryptTest(void)
 int runWolfcryptBenchmark(void)
 {
     int ret;
-    
+
     ret = mount_sd_card("SD");
     if (ret != 0) {
         printk("Failed to mount SD card\n");
@@ -340,14 +341,14 @@ void set_time_using_ntp(const char* ntp_server)
 {
     int sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP); /* NTP is UDP */
 
-    // NTP server address
+    /* NTP server address */
     struct sockaddr_in server_addr;
     memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(123); /* NTP uses port 123 */
     inet_pton(AF_INET, ntp_server, &server_addr.sin_addr.s_addr);
 
-    // Send request
+    /* Send request */
     unsigned char packet[48] = {0xE3, 0, 6, 0xEC, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
                                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
                                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
@@ -374,7 +375,7 @@ void set_time_using_ntp(const char* ntp_server)
     ts.tv_nsec = 0;
     clock_settime(CLOCK_REALTIME, &ts);
 
-    // Print the time
+    /* Print the time */
     char timeStr[50];
     struct tm *timeinfo = localtime(&ts.tv_sec);
     strftime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S", timeinfo);
@@ -425,13 +426,13 @@ int startNetwork(void)
         struct in_addr addr, netmask, gw;
     #endif
 
-    if (!(iface)) { /* See if a network interface (ethernet) is avaliable */
+    if (!(iface)) { /* See if a network interface (ethernet) is available */
         printk("No network interface determined");
         return 1;
     }
 
     if (net_if_flag_is_set(iface, NET_IF_DORMANT)) {
-        printk("Waiting on network interface to be avaliable");
+        printk("Waiting on network interface to be available");
         while(!net_if_is_up(iface)){
             k_sleep(K_MSEC(100));
         }
@@ -481,17 +482,17 @@ int startServer(void)
     int argc = 1;             /* Start with program name only */
 
     printk("\n%s\n", SERVER_PROMPT);
-    
+
     /* Prompt for key type */
     printk("Select key type for server:\n");
     printk(" 1. RSA (default)\n");
     printk(" 2. ECC\n");
     printk(" h. Help\n");
     printk("Enter choice: ");
-    
+
     ret = poll_response(input, sizeof(input));
     printk("Input: %s\n", input);
-    
+
     /* Process key type selection */
     if (input[0] == 'h' || input[0] == 'H') {
         /* Call server with help flag */
@@ -506,12 +507,12 @@ int startServer(void)
     else {
         printk("Selected RSA key (default)\n");
     }
-    
+
     /* Prompt for parameter encryption */
     printk("Use parameter encryption? (1=AES, 2=XOR, n=none, default: none): ");
     ret = poll_response(input, sizeof(input));
     printk("Input: %s\n", input);
-    
+
     if (input[0] == '1') {
         strcpy(paramEnc, "-aes");
         printk("Using AES parameter encryption\n");
@@ -523,13 +524,13 @@ int startServer(void)
     else {
         printk("Not using parameter encryption\n");
     }
-    
+
     /* Prompt for PK callbacks */
 #if 0
     printk("Use PK callbacks? (y/n, default: n): ");
     ret = poll_response(input, sizeof(input));
     printk("Input: %s\n", input);
-    
+
     if (input[0] == 'y' || input[0] == 'Y') {
         strcpy(pkOption, "-pk");
         printk("Using PK callbacks\n");
@@ -546,7 +547,7 @@ int startServer(void)
     printk("Run in loop mode? (y/n, default: n): ");
     ret = poll_response(input, sizeof(input));
     printk("Input: %s\n", input);
-    
+
     if (input[0] == 'y' || input[0] == 'Y') {
         strcpy(loopOption, "-i");
         printk("Running in loop mode\n");
@@ -554,12 +555,12 @@ int startServer(void)
     else {
         printk("Running once (default)\n");
     }
-    
+
     /* Prompt for self-signed certificates */
     printk("Use self-signed certificates? (y/n, default: n): ");
     ret = poll_response(input, sizeof(input));
     printk("Input: %s\n", input);
-    
+
     if (input[0] == 'y' || input[0] == 'Y') {
         strcpy(selfSign, "-self");
         printk("Using self-signed certificates\n");
@@ -567,18 +568,18 @@ int startServer(void)
     else {
         printk("Using CA-signed certificates (default)\n");
     }
-    
+
     /* Prompt for custom port */
     printk("Use custom port? (y/n, default: n): ");
     ret = poll_response(input, sizeof(input));
     printk("Input: %s\n", input);
-    
+
     if (input[0] == 'y' || input[0] == 'Y') {
         char portNum[10];
         printk("Enter port number (1024-65535, default: 11111): ");
         ret = poll_response(portNum, sizeof(portNum));
         printk("Port: %s\n", portNum);
-        
+
         /* Validate port is a number and in valid range */
         char* endptr;
         long port = strtol(portNum, &endptr, 10);
@@ -593,11 +594,11 @@ int startServer(void)
     else {
         printk("Using default port (11111)\n");
     }
-    
+
     /* Build argument array */
     argv[0] = "TPM2_TLS_Server";  /* Proper program name instead of placeholder */
     argc = 1;
-    
+
     /* Add arguments to array only if they're set */
     if (strlen(keyType) > 0) {
         argv[argc++] = keyType;
@@ -617,9 +618,9 @@ int startServer(void)
     if (strlen(portOption) > 0) {
         argv[argc++] = portOption;
     }
-    
+
     printk("Starting TLS server with %d options\n", argc-1);
-    
+
 
     /** SD card mount **/
     ret = mount_sd_card("SD");
@@ -710,10 +711,10 @@ int poll_response(char* input, int len)
     char c;
     int pos = 0;
     const struct device *uart_dev = DEVICE_DT_GET(DT_NODELABEL(flexcomm4_lpuart4));
-    // Clear input buffer
+    /* Clear input buffer */
     memset(input, 0, len);
     while (1) {
-        // Wait for character
+        /* Wait for character */
         ret = -1;
         while (ret == -1) {
             ret = uart_poll_in(uart_dev, &c);
@@ -722,31 +723,31 @@ int poll_response(char* input, int len)
                 return -1;
             }
         }
-        // Handle Enter key (CR or LF)
+        /* Handle Enter key (CR or LF) */
         if (c == '\r' || c == '\n') {
             printk("\n");
             fflush(stdout);
             break;
         }
-        // Handle backspace
+        /* Handle backspace */
         else if (c == '\b' || c == 127) {
             if (pos > 0) {
                 pos--;
-                printk("\b \b"); // Move back, print space, move back again
+                printk("\b \b"); /* Move back, print space, move back again */
                 fflush(stdout);
             }
         }
-        // Handle regular characters
-        else if (pos < len - 1) { // Leave space for null terminator
+        /* Handle regular characters */
+        else if (pos < len - 1) { /* Leave space for null terminator */
             input[pos++] = c;
-            printk("%c", c); // Echo character
+            printk("%c", c); /* Echo character */
             fflush(stdout);
         }
     }
 
-    // Ensure null termination
+    /* Ensure null termination */
     input[pos] = '\0';
-    return pos; // Return the actual length of input
+    return pos; /* Return the actual length of input */
 }
 
 
@@ -765,7 +766,7 @@ int generateCSR(void)
 
     ret = TPM2_CSR_ExampleArgs(NULL, argc, argv);
     if (ret != 0) {
-        printk("Csr Generation failed with return: %d", ret);
+        printk("CSR Generation failed with return: %d", ret);
         ret = fs_unmount(&mp);
         if (ret != 0) {
             printk("Could not unmount file\n");
@@ -933,10 +934,10 @@ int runKeygen(void)
     printk(" 3. Symmetric\n");
     printk(" h. Help\n");
     printk("Enter choice: ");
-    
+
     ret = poll_response(input, sizeof(input));
     printk("Input: %s\n", input);
-    
+
     /* Process key type selection */
     if (input[0] == '2') {
         strcpy(keyType, "-ecc");
@@ -1007,19 +1008,19 @@ int runKeygen(void)
         printk("Failed to mount SD card\n");
         return -1;
     }
-    
+
     /* Check and delete output file if it exists */
     /* Format path with mount point for Zephyr filesystem operations */
     char fullPath[256]; /* Significantly increased buffer size to handle longer paths */
     size_t required_size = strlen(disk_mount_pt) + strlen(outputFile) + 2; /* +2 for slash and null terminator */
-    
+
     if (required_size > sizeof(fullPath)) {
-        printk("Path too long for buffer: needed %zu bytes, have %zu bytes\n", 
+        printk("Path too long for buffer: needed %zu bytes, have %zu bytes\n",
                required_size, sizeof(fullPath));
         fs_unmount(&mp);
         return -1;
     }
-    
+
     /* Now safely create the full path */
     snprintf(fullPath, sizeof(fullPath), "%s/%s", disk_mount_pt, outputFile);
     /* Check if file exists */
@@ -1037,7 +1038,7 @@ int runKeygen(void)
     argv[0] = " ";           /* Program name placeholder */
     argv[1] = keyType;       /* Key type option */
     argv[2] = outputFile;    /* Output file location */
-    
+
     int argIndex = 3;
     if (strlen(template) > 0) {
         argv[argIndex++] = template;
@@ -1052,7 +1053,7 @@ int runKeygen(void)
     /* Call the keygen function */
     printk("Generating key...\n");
     ret = TPM2_Keygen_Example(NULL, argc, argv);
-    
+
     if (ret != 0) {
         printk("Key generation failed with return code: %d\n", ret);
     }
@@ -1079,24 +1080,24 @@ void set_time_manually(int month, int day, int year, int hour, int minute, int s
     struct tm time_info;
     time_t timestamp;
     struct timespec ts;
-    
-    // Convert to tm structure format
-    time_info.tm_year = year - 1900;  // Years since 1900
-    time_info.tm_mon = month - 1;     // Month (0-11)
-    time_info.tm_mday = day;          // Day of month (1-31)
-    time_info.tm_hour = hour;         // Hours (0-23)
-    time_info.tm_min = minute;        // Minutes (0-59)
-    time_info.tm_sec = second;        // Seconds (0-59)
-    time_info.tm_isdst = -1;          // Let the system determine DST
-    
-    // Convert to Unix timestamp
+
+    /* Convert to tm structure format */
+    time_info.tm_year = year - 1900;  /* Years since 1900 */
+    time_info.tm_mon = month - 1;     /* Month (0-11) */
+    time_info.tm_mday = day;          /* Day of month (1-31) */
+    time_info.tm_hour = hour;         /* Hours (0-23) */
+    time_info.tm_min = minute;        /* Minutes (0-59) */
+    time_info.tm_sec = second;        /* Seconds (0-59) */
+    time_info.tm_isdst = -1;          /* Let the system determine DST */
+
+    /* Convert to Unix timestamp */
     timestamp = timeutil_timegm(&time_info);
-    
+
     ts.tv_sec = timestamp;
     ts.tv_nsec = 0;
-    
+
     clock_settime(CLOCK_REALTIME, &ts);
-    printk("System time set manually to %04d-%02d-%02d %02d:%02d:%02d\n", 
+    printk("System time set manually to %04d-%02d-%02d %02d:%02d:%02d\n",
            year, month, day, hour, minute, second);
 }
 
@@ -1116,7 +1117,7 @@ void setTime(void)
     while (!valid) {
         printk("Enter month (1-12): ");
         poll_response(input, sizeof(input));
-        
+
         valid = true;
         /* Check if input is a valid integer */
         for (i = 0; input[i] != '\0' && i < sizeof(input); i++) {
@@ -1125,12 +1126,12 @@ void setTime(void)
                 break;
             }
         }
-        
+
         if (valid) {
             month = atoi(input);
             valid = (month >= 1 && month <= 12);
         }
-        
+
         if (!valid) {
             printk("Invalid month. Please enter a value between 1 and 12.\n");
         }
@@ -1141,7 +1142,7 @@ void setTime(void)
     while (!valid) {
         printk("Enter day (1-31): ");
         poll_response(input, sizeof(input));
-        
+
         valid = true;
         /* Check if input is a valid integer */
         for (i = 0; input[i] != '\0' && i < sizeof(input); i++) {
@@ -1150,12 +1151,12 @@ void setTime(void)
                 break;
             }
         }
-        
+
         if (valid) {
             day = atoi(input);
             valid = (day >= 1 && day <= 31);
         }
-        
+
         if (!valid) {
             printk("Invalid day. Please enter a value between 1 and 31.\n");
         }
@@ -1166,7 +1167,7 @@ void setTime(void)
     while (!valid) {
         printk("Enter year (2000-2099): ");
         poll_response(input, sizeof(input));
-        
+
         valid = true;
         /* Check if input is a valid integer */
         for (i = 0; input[i] != '\0' && i < sizeof(input); i++) {
@@ -1175,12 +1176,12 @@ void setTime(void)
                 break;
             }
         }
-        
+
         if (valid) {
             year = atoi(input);
             valid = (year >= 2000 && year <= 2099);
         }
-        
+
         if (!valid) {
             printk("Invalid year. Please enter a value between 2000 and 2099.\n");
         }
@@ -1188,7 +1189,7 @@ void setTime(void)
 
     /* Validate date further for month-specific day ranges */
     leap_year = ((year % 4 == 0 && year % 100 != 0) || year % 400 == 0);
-    
+
     switch (month) {
         case 4: case 6: case 9: case 11:
             max_days = 30;
@@ -1199,9 +1200,9 @@ void setTime(void)
         default:
             max_days = 31;
     }
-    
+
     if (day > max_days) {
-        printk("Invalid date: %d-%02d-%d has at most %d days. Setting to last day of month.\n", 
+        printk("Invalid date: %d-%02d-%d has at most %d days. Setting to last day of month.\n",
                year, month, day, max_days);
         day = max_days;
     }
@@ -1211,7 +1212,7 @@ void setTime(void)
     while (!valid) {
         printk("Enter hour (0-23): ");
         poll_response(input, sizeof(input));
-        
+
         valid = true;
         /* Check if input is a valid integer */
         for (i = 0; input[i] != '\0' && i < sizeof(input); i++) {
@@ -1220,12 +1221,12 @@ void setTime(void)
                 break;
             }
         }
-        
+
         if (valid) {
             hour = atoi(input);
             valid = (hour >= 0 && hour <= 23);
         }
-        
+
         if (!valid) {
             printk("Invalid hour. Please enter a value between 0 and 23.\n");
         }
@@ -1236,7 +1237,7 @@ void setTime(void)
     while (!valid) {
         printk("Enter minute (0-59): ");
         poll_response(input, sizeof(input));
-        
+
         valid = true;
         /* Check if input is a valid integer */
         for (i = 0; input[i] != '\0' && i < sizeof(input); i++) {
@@ -1245,12 +1246,12 @@ void setTime(void)
                 break;
             }
         }
-        
+
         if (valid) {
             minute = atoi(input);
             valid = (minute >= 0 && minute <= 59);
         }
-        
+
         if (!valid) {
             printk("Invalid minute. Please enter a value between 0 and 59.\n");
         }
@@ -1261,7 +1262,7 @@ void setTime(void)
     while (!valid) {
         printk("Enter second (0-59): ");
         poll_response(input, sizeof(input));
-        
+
         valid = true;
         /* Check if input is a valid integer */
         for (i = 0; input[i] != '\0' && i < sizeof(input); i++) {
@@ -1270,23 +1271,23 @@ void setTime(void)
                 break;
             }
         }
-        
+
         if (valid) {
             second = atoi(input);
             valid = (second >= 0 && second <= 59);
         }
-        
+
         if (!valid) {
             printk("Invalid second. Please enter a value between 0 and 59.\n");
         }
     }
 
     /* Confirm setting time */
-    printk("\nSetting time to: %04d-%02d-%02d %02d:%02d:%02d\n", 
+    printk("\nSetting time to: %04d-%02d-%02d %02d:%02d:%02d\n",
            year, month, day, hour, minute, second);
     printk("Press 'y' to confirm, any other key to cancel: ");
     poll_response(input, sizeof(input));
-    
+
     if (input[0] == 'y' || input[0] == 'Y') {
         set_time_manually(month, day, year, hour, minute, second);
         printk("Time set successfully!\n");
@@ -1302,7 +1303,7 @@ int fullDemo(void)
     char input[2];
     int regenerate_cert = 0;  /* Using int instead of bool: 0=false, 1=true */
     int unmount_ret;
-    
+
     /* For keygen */
     char* keygen_argv[] = {" ", "/SD:/rsa.raw", "-rsa", "-t", "-aes", "-pem"};
     int keygen_argc = sizeof(keygen_argv) / sizeof(keygen_argv[0]);
@@ -1310,14 +1311,14 @@ int fullDemo(void)
     /* For CSR - matching the exact pattern in generateCSR() */
     char* csr_argv[] = {" ", "-cert"};
     int csr_argc = sizeof(csr_argv) / sizeof(csr_argv[0]);
-    
+
     /* For server */
     char* server_argv[] = {" ", "-rsa", "-aes", "-pk", "-self", RSA_FILENAME};
     int server_argc = sizeof(server_argv) / sizeof(server_argv[0]);
 
     printk("\n=== Running Full Demo ===\n");
 
-        /* Mount SD card */
+    /* Mount SD card */
     ret = mount_sd_card("SD");
     if (ret != 0) {
         printk("Failed to mount SD card. Aborting demo.\n");
@@ -1327,7 +1328,7 @@ int fullDemo(void)
     /* Prompt user if they want to regenerate the certificate */
     printk("Do you want to regenerate the certificate? (y/n, default: n): ");
     poll_response(input, sizeof(input));
-    
+
     if (input[0] == 'y' || input[0] == 'Y') {
         regenerate_cert = 1;
     }
@@ -1342,7 +1343,7 @@ int fullDemo(void)
         /* Call the keygen function */
         printk("Generating key...\n");
         ret = TPM2_Keygen_Example(NULL, keygen_argc, keygen_argv);
-        
+
         if (ret != 0) {
             printk("Key generation failed with return code: %d\n", ret);
             /* Unmount SD card before returning */
@@ -1357,10 +1358,10 @@ int fullDemo(void)
         }
 
         printk("\n--- Generating Certificate ---\n");
-        
+
         /* Call the CSR generation function using the exact pattern from generateCSR() */
         ret = TPM2_CSR_ExampleArgs(NULL, csr_argc, csr_argv);
-        
+
         if (ret != 0) {
             printk("Certificate generation failed with return code: %d\n", ret);
             /* Unmount SD card before returning */
@@ -1374,22 +1375,22 @@ int fullDemo(void)
             printk("Certificate generation completed successfully\n");
         }
     }
-    
+
     /* Step 3: Start the TLS server */
     printk("\n--- Starting TLS Server ---\n");
     printk("Using RSA key, AES parameter encryption, PK callbacks, self-signed certificates\n");
-    
+
     /* Call the server function */
     printk("Starting TLS server...\n");
     ret = TPM2_TLS_ServerArgs(NULL, server_argc, server_argv);
-    
+
     if (ret != 0) {
         printk("Server execution failed with return code: %d\n", ret);
     }
     else {
         printk("Server execution completed successfully\n");
     }
-    
+
     /* Unmount SD card */
     unmount_ret = fs_unmount(&mp);
     if (unmount_ret != 0) {
@@ -1398,7 +1399,7 @@ int fullDemo(void)
             ret = unmount_ret; /* Only overwrite ret if it was successful */
         }
     }
-    
+
     printk("\n=== Full Demo Completed ===\n");
     return ret;
 }
