@@ -69,20 +69,20 @@
 
 /* Program Defines Start */
 
-#define DEFAULT_PORT 11111 /* Define's the port we want to use for
+#define DEFAULT_PORT 11111 /* Define the port we want to use for
                             * the network */
 
 #define LOCAL_DEBUG 0 /* Use for wolfSSL's internal Debugging */
 
 #define BUFFER_SIZE 256
 
-/* Use DHCP auto ip assignment or static assignment */
+/* Use DHCP auto IP assignment or static assignment */
 #undef	DHCP_ON
-#define DHCP_ON 1   /* Set to true (1) if you want auto assignment ip, */
-                    /* set false (0) for staticly define. */
+#define DHCP_ON 1   /* Set to true (1) if you want auto assignment IP, */
+                    /* set false (0) for statically defined. */
                     /* Make sure to avoid IP conflicts on the network you */
                     /* assign this to, check the defaults before using. */
-                    /* If unsure leave DHCP_ON set to 1 */
+                    /* If unsure, leave DHCP_ON set to 1 */
 
 #if DHCP_ON == 0
 /* Define Static IP, Gateway, and Netmask */
@@ -91,7 +91,7 @@
     #define STATIC_IPV4_NETMASK "255.255.255.0"
 #endif
 
-/* Set the TLS Version Currently only 2 or 3 is avaliable for this */
+/* Set the TLS Version. Currently only 2 or 3 is available for this */
 /* application, defaults to TLSv3 */
 #undef TLS_VERSION
 #define TLS_VERSION 2
@@ -103,7 +103,7 @@
 #define USER_KEY publicKeyRSA
 #define USER_KEY_SIZE publicKeyRSA_size
 
-/* The devicetree node identifier for the the RGB Led determined, */
+/* The devicetree node identifier for the RGB LED determined */
 /* by looking at the device tree alias */
 
 #define RED_LED DT_ALIAS(led0)
@@ -122,7 +122,7 @@ bool redStatus = true;
 bool blueStatus =  true;
 bool greenStatus = true;
 
-/* Gloabl Variables/Starts End */
+/* Global Variables/Structs End */
 
 
 int startNetwork()
@@ -134,13 +134,13 @@ int startNetwork()
         struct in_addr addr, netmask, gw;
     #endif
 
-    if (!(iface)) { /* See if a network interface (ethernet) is avaliable */
+    if (!(iface)) { /* See if a network interface (Ethernet) is available */
         printf("No network interface determined\n");
         return 1;
     }
 
     if (net_if_flag_is_set(iface, NET_IF_DORMANT)) {
-        printf("Waiting on network interface to be avaliable\n");
+        printf("Waiting on network interface to be available\n");
         while(!net_if_is_up(iface)){
             k_sleep(K_MSEC(100));
         }
@@ -165,7 +165,7 @@ int startNetwork()
 
 
     #else
-        #error "Please set DHCP_ON to true (1) or false (2), if unsure set to true (1)"
+        #error "Please set DHCP_ON to true (1) or false (0), if unsure set to true (1)"
     #endif
 
 
@@ -513,7 +513,7 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    /* Start SSH server*/
+    /* Start SSH server */
     if (startServer() != 0){
         printf("Server has Failed!\n");
         return 1;

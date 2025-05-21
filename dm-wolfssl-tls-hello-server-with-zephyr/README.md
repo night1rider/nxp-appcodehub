@@ -4,7 +4,7 @@
 
 ## wolfSSL TLSv1.3 Hello Server using Zephyr RTOS
 
-This demo demonstrates capabilities of new FRDM-MCXN947.  
+This demo demonstrates capabilities of the new FRDM-MCXN947.  
 
 ### Demo
 Creating a simple server using the Zephyr RTOS and wolfSSL to utilize the networking capabilities of the FRDM-MCXN947 through its Ethernet port.
@@ -26,7 +26,7 @@ Creating a simple server using the Zephyr RTOS and wolfSSL to utilize the networ
 9. [Release Notes](#step9)
 
 ## 1. Software<a name="step1"></a>
-- [MCUXpresso for VScode 1.5.61 or newer](https://www.nxp.com/products/processors-and-microcontrollers/arm-microcontrollers/general-purpose-mcus/lpc800-arm-cortex-m0-plus-/mcuxpresso-for-visual-studio-code:MCUXPRESSO-VSC?cid=wechat_iot_303216)
+- [MCUXpresso for VS Code 1.5.61 or newer](https://www.nxp.com/products/processors-and-microcontrollers/arm-microcontrollers/general-purpose-mcus/lpc800-arm-cortex-m0-plus-/mcuxpresso-for-visual-studio-code:MCUXPRESSO-VSC?cid=wechat_iot_303216)
 
 - [Zephyr Setup](https://docs.zephyrproject.org/latest/develop/getting_started/index.html)
     - [wolfSSL as a Module added to Zephyr](https://github.com/wolfSSL/wolfssl/blob/master/zephyr/README.md)
@@ -66,7 +66,7 @@ Creating a simple server using the Zephyr RTOS and wolfSSL to utilize the networ
 
 ## 3. Setup<a name="step3"></a>
 
-### 3.1 Import the Project and build
+### 3.1 Import the Project and Build
 1. Follow section 1: `Setup` in the top level [README](../README.md)
 2. Under the "Projects" tab, right click the project and choose "build selected", this should result in no errors. 
 
@@ -74,22 +74,21 @@ Creating a simple server using the Zephyr RTOS and wolfSSL to utilize the networ
 
 The project should be called `dm-wolfssl-tls-hello-server-with-zephyr`.
 
+### 3.2 Connect Hardware
+1. Connect the FRDM-MCXN947 to your computer with the provided USB-C Cable
 
-### 3.2 Connect hardware
-1. Connect the FRDM-MCXN947 to you computer with the provided USB-C Cable
-
-2. Connect the FRDM-MCXN947 to your network with a ethernet cable
+2. Connect the FRDM-MCXN947 to your network with an Ethernet cable
 
 ### 3.4 Program and Run the Server
-1. Flash the .elf to FRDM-MCXN947, Can be done with right clicking the project and choosing to "flash the selected target"
+1. Flash the .elf to FRDM-MCXN947. Can be done by right clicking the project and choosing to "flash the selected target"
 2. Connect to the Serial Output of the FRDM-MCXN947 via:
-    - Screen Command - `screen /dev/tty"MCXN-Port 115200`
+    - Screen Command - `screen /dev/tty"MCXN-Port 115200"`
     - Some Serial Terminal you are familiar with 
 3. Push reset button on the FRDM-MCXN947 board and view the startup message. Note the IP address.
 
     [<img src="Images/Setup3-4.png" width="300"/>](Images/Setup3-4.png)
 
-4. In a terminal go to the directory `/path/to/project/__repo__/modules/crypto/wolfssl` and then use the client application.
+4. In a terminal, go to the directory `/path/to/project/__repo__/modules/crypto/wolfssl` and then use the client application.
 `./examples/client/client -h <noted ip address> -v 4`
 
 This should produce the following results:
@@ -110,7 +109,7 @@ This should produce the following results:
 
     [<img src="Images/Verification4-2-1.png" width="500"/>](Images/Verification4-2-1.png)
 
-2. Now setup and apply a filter using the noted ip in step: [3.4.3](#step3)
+2. Now set up and apply a filter using the noted IP in step: [3.4.3](#step3)
 
     [<img src="Images/Verification4-2-2.png" width="500"/>](Images/Verification4-2-2.png)
 
@@ -129,8 +128,8 @@ It should look similar to this example.
     [<img src="Images/Verification4-3-2.png" width="600"/>](Images/Verification4-3-2.png)
 
 ## 5. Project Options<a name="step5"></a>
-### 5.1 Setting up a static IPv4 on Zephyr
-By default the project is setup to use a DHCP Server, this section will show how to setup a static IP. Please make sure you chose an IP for the device that will not cause a IP conflict on your network.
+### 5.1 Setting up a Static IPv4 on Zephyr
+By default, the project is set up to use a DHCP Server. This section will show how to set up a static IP. Please make sure you choose an IP for the device that will not cause an IP conflict on your network.
 
 1. In [src/main.c](src/main.c), look for the following section.
 
@@ -180,13 +179,13 @@ If you want to change the version of TLS to v2 for the project. This can useful 
 ### 5.3 Changing the Server's Port
 If you want to change the port from the default `11111`
 
-1. In [src/main.c](src/main.c) locate `#define DEFAULT_PORT 11111`, and change `11111` to the desired port you want to device to use.
+1. In [src/main.c](src/main.c) locate `#define DEFAULT_PORT 11111`, and change `11111` to the desired port you want the device to use.
 
 2. Rebuild and flash the device.
 
 3. When using `./examples/client/client -h <noted ip address> -v 4` add the option `-p <Desired Port>` so that it is `./examples/client/client -h <noted ip address> -v 4 -p <Desired Port>`
 
-4. To verify the correct port is being is via Wireshark, look in the Info section of the network capture. For this example I changed the device to use port `11110`.
+4. To verify the correct port is being used via Wireshark, look in the Info section of the network capture. For this example, I changed the device to use port `11110`.
 
     [<img src="Images/ProjectOptions5-3-4.png" width="600"/>](Images/ProjectOptions5-3-4.png)
 

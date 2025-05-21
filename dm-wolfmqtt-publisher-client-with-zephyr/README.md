@@ -27,7 +27,7 @@ Simply connects to an AWS broker, subscribes, and publishes a message.
 8. [Release Notes](#step8)
 
 ## 1. Software<a name="step1"></a>
-- [MCUXpresso for VSCode 1.5.61 or newer](https://www.nxp.com/products/processors-and-microcontrollers/arm-microcontrollers/general-purpose-mcus/lpc800-arm-cortex-m0-plus-/mcuxpresso-for-visual-studio-code:MCUXPRESSO-VSC?cid=wechat_iot_303216)
+- [MCUXpresso for VS Code 1.5.61 or newer](https://www.nxp.com/products/processors-and-microcontrollers/arm-microcontrollers/general-purpose-mcus/lpc800-arm-cortex-m0-plus-/mcuxpresso-for-visual-studio-code:MCUXPRESSO-VSC?cid=wechat_iot_303216)
 
 - [Zephyr Setup](https://docs.zephyrproject.org/latest/develop/getting_started/index.html)
     - [wolfSSL as a Module added to Zephyr](https://github.com/wolfSSL/wolfssl/blob/master/zephyr/README.md)
