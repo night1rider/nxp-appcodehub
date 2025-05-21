@@ -11,6 +11,8 @@ manifest:
       url-base: https://github.com/wolfssl
     - name: wolfmqtt
       url-base: https://github.com/wolfssl
+    - name: wolftpm
+      url-base: https://github.com/wolfssl
 
   projects:
     - name: zephyr
@@ -23,7 +25,7 @@ manifest:
           - segger
     - name: wolfssl
       path: modules/crypto/wolfssl
-      revision: v5.7.6-stable
+      revision: v5.8.0-stable
       remote: wolfssl
     - name: wolfssh
       path: modules/lib/wolfssh
@@ -33,3 +35,7 @@ manifest:
       path: modules/lib/wolfmqtt
       revision: v1.19.1
       remote: wolfmqtt
+    - name: wolftpm
+      path: modules/lib/wolftpm
+      revision: v3.9.1
+      remote: wolftpm
