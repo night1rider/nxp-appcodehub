@@ -69,10 +69,10 @@
 /* Use DHCP auto IP assignment or static assignment */
 #undef DHCP_ON
 #define DHCP_ON 1  /* Set to true (1) if you want auto assignment IP, */ 
-                   /* set false (0) for statically define. */
+                   /* set false (0) for statically defined. */
                    /* Make sure to avoid IP conflicts on the network you */
                    /* assign this to, check the defaults before using. */
-                   /* If unsure leave DHCP_ON set to 1 */
+                   /* If unsure, leave DHCP_ON set to 1 */
  
 #if DHCP_ON == 0
 /* Define Static IP, Gateway, and Netmask */
@@ -82,12 +82,12 @@
     #define DNS_SERVER_ADDR "8.8.8.8"
 #endif
 
-/* Set the TLS Version Currently only 2 or 3 is available for this */
+/* Set the TLS Version. Currently only 2 or 3 is available for this */
 /* application, defaults to TLSv3 */
 #undef TLS_VERSION
 #define TLS_VERSION 1
 
-/* This just sets up the correct function for the application via macros */
+/* This sets up the correct function for the application via macros */
 #undef TLS_METHOD
 #if TLS_VERSION == 3
     #define TLS_METHOD wolfTLSv1_3_client_method()

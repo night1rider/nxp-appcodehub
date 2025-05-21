@@ -26,7 +26,7 @@ Creating a simple server using the Zephyr RTOS and wolfSSL to utilize the networ
 9. [Release Notes](#step9)
 
 ## 1. Software<a name="step1"></a>
-- [MCUXpresso for VSCode 1.5.61 or newer](https://www.nxp.com/products/processors-and-microcontrollers/arm-microcontrollers/general-purpose-mcus/lpc800-arm-cortex-m0-plus-/mcuxpresso-for-visual-studio-code:MCUXPRESSO-VSC?cid=wechat_iot_303216)
+- [MCUXpresso for VS Code 1.5.61 or newer](https://www.nxp.com/products/processors-and-microcontrollers/arm-microcontrollers/general-purpose-mcus/lpc800-arm-cortex-m0-plus-/mcuxpresso-for-visual-studio-code:MCUXPRESSO-VSC?cid=wechat_iot_303216)
 
 - [Zephyr Setup](https://docs.zephyrproject.org/latest/develop/getting_started/index.html)
     - [wolfSSL as a Module added to Zephyr](https://github.com/wolfSSL/wolfssl/blob/master/zephyr/README.md)
@@ -110,12 +110,12 @@ The project should be called `dm-wolfssh-tls-rgb-server-with-zephyr`.
 
                 [<img src="Images/Setup3-4-Key-Serial.png" width="800"/>](Images/Setup3-4-Password-Client.png)
 
-5. Now type in the SSH client `red`, `green`, `blue`, or `close` to either control the corresponding RGB Diode, or close the connection to the server.
-    - Initially the RGB will be initialized so that all the diodes so the RGB light should be white if the device was flashed correctly.
+5. Now type in the SSH client `red`, `green`, `blue`, or `close` to either control the corresponding RGB LED, or close the connection to the server.
+    - Initially, the RGB will be initialized so that all the LEDs are on, so the RGB light should be white if the device was flashed correctly.
 
         [<img src="Images/whiteRGB.JPG" width="400"/>](Images/whiteRGB.JPG)
 
-    - If you were to enter the following commands in a row 
+    - If you were to enter the following commands in a row:
         - `red` (Will toggle red off)
 
         [<img src="Images/redOFF.JPG" width="400"/>](Images/redOFF.JPG)
@@ -128,7 +128,7 @@ The project should be called `dm-wolfssh-tls-rgb-server-with-zephyr`.
 
         [<img src="Images/blueOFF.JPG" width="400"/>](Images/blueOFF.JPG)
 
-        - `red ` (Will toggle red on)
+        - `red` (Will toggle red on)
 
         [<img src="Images/redON.JPG" width="400"/>](Images/redON.JPG)
 
@@ -144,17 +144,17 @@ The project should be called `dm-wolfssh-tls-rgb-server-with-zephyr`.
 
     [<img src="Images/Verification4-2-1.png" width="500"/>](Images/Verification4-2-1.png)
 
-2. Now setup and apply a filter using the noted ip in step: [3.4.3](#step3)
+2. Now set up and apply a filter using the noted IP in step: [3.4.3](#step3)
 
     [<img src="Images/Verification4-2-2.png" width="500"/>](Images/Verification4-2-2.png)
 
-3. Now watch the wireshark capture and redo part 3.4. You can inspect the connection and you can also see what it looks like when the connection is rejected. Try using the fake key provided in `/path/to/dm-wolfssh-rgb-server-with-zephyr/Test_Keys/id_rsa_fake` and inspect the wireshark capture.
+3. Now watch the Wireshark capture and redo part 3.4. You can inspect the connection and you can also see what it looks like when the connection is rejected. Try using the fake key provided in `/path/to/dm-wolfssh-rgb-server-with-zephyr/Test_Keys/id_rsa_fake` and inspect the Wireshark capture.
 
    [<img src="Images/Verification4-3-FakeKey.png" width="700"/>](Images/Verification4-3-FakeKey.png)
 
 ## 5. Project Options<a name="step5"></a>
-### 5.1 Setting up a static IPv4 on Zephyr
-By default the project is setup to use a DHCP Server, this section will show how to setup a static IP. Please make sure you chose an IP for the device that will not cause a IP conflict on your network.
+### 5.1 Setting up a Static IPv4 on Zephyr
+By default, the project is set up to use a DHCP Server. This section will show how to set up a static IP. Please make sure you choose an IP for the device that will not cause an IP conflict on your network.
 
 1. In [src/main.c](src/main.c), look for the following section.
 
@@ -168,9 +168,9 @@ By default the project is setup to use a DHCP Server, this section will show how
 
     `#define DHCP_ON 0`
 
-3. Set the `STATIC_IPV4_ADDR` macro to your desired IP, by default it is set to `192.168.1.70`. Make sure the IP you choose does not cause a conflict on your network.
+3. Set the `STATIC_IPV4_ADDR` macro to your desired IP. By default, it is set to `192.168.1.70`. Make sure the IP you choose does not cause a conflict on your network.
 
-4. Set the `STATIC_IPV4_GATEWAY` macro to your network's gateway. Usually this is `192.168.1.1` on home networks, however this could not always be the case. This is usually the IP of your primary network router.
+4. Set the `STATIC_IPV4_GATEWAY` macro to your network's gateway. Usually, this is `192.168.1.1` on home networks, however, this could not always be the case. This is usually the IP of your primary network router.
 
 5. Set the `STATIC_IPV4_NETMASK` macro to your needs. Generally `255.255.255.0` for most use cases.
 

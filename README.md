@@ -9,7 +9,7 @@ The projects in this repo are intended to be used with NXP's [MCUXpresso for VS-
 
 To use a demo project, simply use the provided `setup.sh` on the given project you want to run.
 
-All Projects were initially tested with `Zephyr v4.0.0` and `Zephyr SDK 0.16.8`
+All projects were initially tested with `Zephyr v4.0.0` and `Zephyr SDK 0.16.8`
 
 ### 1. Setup
 
@@ -37,7 +37,7 @@ The default board is the FRDM-MCXN947. If you want to use a different board, lik
 ./setup.sh dm-wolfmqtt-button-publisher-client-with-zephyr mimxrt1060_evkb
 ```
 
-You may need to double-check the `proj.conf` settings of the project to disable and/or enable drivers specific for the board. 
+You may need to double-check the `prj.conf` settings of the project to disable and/or enable drivers specific for the board. 
 
 ### 2. Import the Project
 

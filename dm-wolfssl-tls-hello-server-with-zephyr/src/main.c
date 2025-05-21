@@ -20,7 +20,7 @@
  */
 
 /* wolfSSL Includes Start */
-#include "user_settings.h"      /* For wolfssl zephyr configuration */
+#include "user_settings.h"      /* For wolfSSL Zephyr configuration */
 #include <wolfssl/ssl.h>        /* Basic functionality for TLS */
 #include <wolfssl/certs_test.h> /* Needed for Cert Buffers */
 #include <wolfssl/wolfcrypt/hash.h>
@@ -49,13 +49,13 @@
 
 #define LOCAL_DEBUG 0       /* Use for wolfSSL's internal Debugging */
 
-/* Use DHCP auto ip assignment or static assignment */
+/* Use DHCP auto IP assignment or static assignment */
 #undef  DHCP_ON
-#define DHCP_ON 1   /* Set to true (1) if you want auto assignment ip, */ 
-                    /* set false (0) for staticly define. */
+#define DHCP_ON 1   /* Set to true (1) if you want auto assignment IP, */
+                    /* set false (0) for statically defined. */
                     /* Make sure to avoid IP conflicts on the network you */
                     /* assign this to, check the defaults before using. */
-                    /* If unsure leave DHCP_ON set to 1 */
+                    /* If unsure, leave DHCP_ON set to 1 */
  
 #if DHCP_ON == 0
 /* Define Static IP, Gateway, and Netmask */
@@ -64,12 +64,12 @@
     #define STATIC_IPV4_NETMASK "255.255.255.0"
 #endif
 
-/* Set the TLS Version Currently only 2 or 3 is avaliable for this */
+/* Set the TLS Version. Currently only 2 or 3 is available for this */
 /* application, defaults to TLSv3 */
 #undef TLS_VERSION
 #define TLS_VERSION 3
 
-/* This just sets up the correct function for the application via macro's*/
+/* This sets up the correct function for the application via macros */
 #undef TLS_METHOD
 #if TLS_VERSION == 3
     #define TLS_METHOD wolfTLSv1_3_server_method()
@@ -79,7 +79,7 @@
     #define TLS_METHOD wolfTLSv1_3_server_method()
 #endif
 
-/* Set up the network using the zephyr network stack */
+/* Set up the network using the Zephyr network stack */
 int startNetwork() {
 
     struct net_if *iface = net_if_get_default();
@@ -89,13 +89,13 @@ int startNetwork() {
         struct in_addr addr, netmask, gw;
     #endif
 
-    if (!(iface)) { /* See if a network interface (ethernet) is avaliable */
+    if (!(iface)) { /* See if a network interface (ethernet) is available */
         printf("No network interface determined");
         return 1;
     }
 
     if (net_if_flag_is_set(iface, NET_IF_DORMANT)) {
-        printf("Waiting on network interface to be avaliable");
+        printf("Waiting on network interface to be available");
         while(!net_if_is_up(iface)){
             k_sleep(K_MSEC(100));
         }
@@ -119,7 +119,7 @@ int startNetwork() {
         net_if_ipv4_addr_add(iface, &addr, NET_ADDR_MANUAL, 0);
 
     #else
-        #error "Please set DHCP_ON to true (1) or false (2), if unsure set to true (1)"
+        #error "Please set DHCP_ON to true (1) or false (0), if unsure set to true (1)"
     #endif
 
     /* Display IP address that was assigned when done */
@@ -202,7 +202,7 @@ int startServer(void) {
 
     printf("\nServer Started\n");
 
-        /* Continue to accept clients until shutdown is issued */
+    /* Continue to accept clients until shutdown is issued */
     while (!shutdown) {
         printf("Waiting for a connection...\n");
 
