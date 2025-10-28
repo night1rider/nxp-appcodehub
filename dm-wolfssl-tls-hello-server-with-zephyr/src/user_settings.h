@@ -22,13 +22,6 @@
 #ifndef USER_SETTINGS_H
 #define USER_SETTINGS_H
 
-#ifdef CONFIG_WOLFSSL
-
-/* If a custom user_settings file is provided use it instead */
-#ifdef WOLFSSL_SETTINGS_FILE
-#include WOLFSSL_SETTINGS_FILE
-#else
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -62,6 +55,11 @@ extern "C" {
 #define NO_ASN_TIME
 #define USE_CERT_BUFFERS_2048
 #define USE_ANY_ADDR
+
+#define WOLFCRYPT_TEST
+#define WOLFCRYPT_BENCHMARK
+#define NO_MAIN_DRIVER
+
 /* ------------------------------------------------------------------------- */
 /* Hardware */
 /* ------------------------------------------------------------------------- */
@@ -429,9 +427,6 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* CONFIG_WOLFSSL_SETTINGS_FILE */
-#endif /* CONFIG_WOLFSSL */
 
 #endif /* USER_SETTINGS_H */
 

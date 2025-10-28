@@ -12,10 +12,11 @@ if(NOT EXISTS "${CMAKE_SOURCE_DIR}/__repo__")
 endif()
 
 target_sources(app PRIVATE src/main.c)
+target_sources(app PRIVATE __repo__/modules/crypto/wolfssl/wolfcrypt/test/test.c)
+target_sources(app PRIVATE __repo__/modules/crypto/wolfssl/wolfcrypt/benchmark/benchmark.c)
 target_include_directories(app PRIVATE src)
 
 add_definitions(-DWOLFSSL_USER_SETTINGS)
-
 
 
 # Check if the command is executed by redirecting output to a file (Unix-like systems)
@@ -24,3 +25,4 @@ add_custom_command(
     COMMAND cd ../__repo__/modules/crypto/wolfssl && ./autogen.sh && ./configure && make
     COMMENT "Echoing HELLO_WORLD after building the app target"
 )
+

@@ -20,8 +20,8 @@
  */
 
 /* User Settings file */
-#include "wolfmqtt_usersettings.h"  /* For wolfssl/mqtt zephyr configuration */
-#include "wolfssl_usersettings.h"
+#include "user_settings.h"  /* For wolfssl/mqtt zephyr configuration */
+#include <wolfssl/wolfcrypt/settings.h>
 /* wolfSSL Includes Start */
 #include <wolfssl/ssl.h>            /* Basic functionality for TLS */
 #include <wolfssl/certs_test.h>     /* Needed for Cert Buffers */
@@ -30,6 +30,14 @@
 #include <wolfssl/wolfcrypt/coding.h>
 #include <wolfssl/wolfcrypt/hmac.h>
 /* wolfSSL Includes End */
+
+#ifdef WOLFCRYPT_TEST
+#include <wolfcrypt/test/test.h>
+#endif
+
+#ifdef WOLFCRYPT_BENCHMARK
+#include <wolfcrypt/benchmark/benchmark.h>
+#endif
 
 /* wolfMQTT Include Start */
 #include <wolfmqtt/mqtt_client.h>
@@ -617,6 +625,16 @@ int main(void) {
         printf("Network Initialization via DHCP Failed\n");
         return 1;
     }
+
+#ifdef WOLFCRYPT_TEST
+    printf("\nRunning wolfCrypt test\n");
+    wolfcrypt_test(NULL);
+#endif
+
+#ifdef WOLFCRYPT_BENCHMARK
+    printf("\nRunning wolfCrypt benchmark\n");
+    benchmark_test(NULL);
+#endif
 
     set_time_using_ntp(resolve_hostname("pool.ntp.org"));
     if (wolfSSL_Init() != WOLFSSL_SUCCESS) {

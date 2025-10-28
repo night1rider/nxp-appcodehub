@@ -19,15 +19,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1335, USA
  */
 
-#ifndef USER_SETTINGS_H_2
-#define USER_SETTINGS_H_2
-
-#ifdef CONFIG_WOLFSSL
-
-/* If a custom user_settings file is provided use it instead */
-#ifdef WOLFSSL_SETTINGS_FILE_2
-#include WOLFSSL_SETTINGS_FILE_2
-#else
+#ifndef USER_SETTINGS_H
+#define USER_SETTINGS_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -494,8 +487,4 @@ extern "C" {
 }
 #endif
 
-#endif /* CONFIG_WOLFSSL_SETTINGS_FILE */
-#endif /* CONFIG_WOLFSSL */
-
 #endif /* USER_SETTINGS_H */
-

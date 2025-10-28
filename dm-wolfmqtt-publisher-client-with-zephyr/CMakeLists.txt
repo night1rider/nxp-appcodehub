@@ -13,10 +13,10 @@ endif()
 
 
 target_sources(app PRIVATE src/main.c)
-
+target_sources(app PRIVATE __repo__/modules/crypto/wolfssl/wolfcrypt/test/test.c)
+target_sources(app PRIVATE __repo__/modules/crypto/wolfssl/wolfcrypt/benchmark/benchmark.c)
 target_include_directories(app PRIVATE src)
 
 
-add_definitions(-DWOLFMQTT_ZEPHYR)
 add_definitions(-DWOLFMQTT_USER_SETTINGS)
 add_definitions(-DWOLFSSL_USER_SETTINGS)

@@ -20,9 +20,8 @@
  */
 
 /* wolfSSL Includes Start	*/
-#include "wolfssl_user_settings_nofs.h"
-#include "wolfssh_user_settings_nofs.h"
-
+#include "user_settings.h"
+#include <wolfssl/wolfcrypt/settings.h>
 #include <wolfssl/ssl.h>
 #include <wolfssl/certs_test.h>
 #include <wolfssl/wolfcrypt/hash.h>
@@ -41,6 +40,14 @@
 #include <wolfssh/internal.h>
 #include <wolfssh/agent.h>
 #include <wolfssh/certs_test.h>
+
+#ifdef WOLFCRYPT_TEST
+#include <wolfcrypt/test/test.h>
+#endif
+
+#ifdef WOLFCRYPT_BENCHMARK
+#include <wolfcrypt/benchmark/benchmark.h>
+#endif
 
 /* wolfSSH Includes End */
 
@@ -375,6 +382,17 @@ int startServer(void)
 {
     WOLFSSH_CTX* sshCTX;
     const char *bannerMSG = "wolfSSH Zephyr Server\n";
+
+#ifdef WOLFCRYPT_TEST
+    printf("\nRunning wolfCrypt test\n");
+    wolfcrypt_test(NULL);
+#endif
+
+#ifdef WOLFCRYPT_BENCHMARK
+        printf("\nRunning wolfCrypt benchmark\n");
+        benchmark_test(NULL);
+#endif
+
 
     printf("Starting SSH server\n");
 
