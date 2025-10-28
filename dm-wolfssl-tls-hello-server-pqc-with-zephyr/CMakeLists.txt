@@ -12,15 +12,25 @@ if(NOT EXISTS "${CMAKE_SOURCE_DIR}/__repo__")
 endif()
 
 target_sources(app PRIVATE src/main.c)
+target_sources(app PRIVATE __repo__/modules/crypto/wolfssl/wolfcrypt/benchmark/benchmark.c)
 target_include_directories(app PRIVATE src)
 
 add_definitions(-DWOLFSSL_USER_SETTINGS)
 
 
 
-# Check if the command is executed by redirecting output to a file (Unix-like systems)
+# Build wolfSSL with ML-KEM and ML-DSA support, then build the client application
 add_custom_command(
     TARGET app POST_BUILD
-    COMMAND cd ../__repo__/modules/crypto/wolfssl && ./autogen.sh && ./configure && make
-    COMMENT "Echoing HELLO_WORLD after building the app target"
+    COMMAND cd ../__repo__/modules/crypto/wolfssl && ./autogen.sh && ./configure --enable-mlkem --enable-dilithium && make
+    COMMENT "Building wolfSSL with ML-KEM and ML-DSA support"
+)
+
+# Build the client-tls13-filetransfer application
+add_custom_command(
+    TARGET app POST_BUILD
+    COMMAND gcc ${CMAKE_SOURCE_DIR}/client-tls13-filetransfer.c -o ${CMAKE_SOURCE_DIR}/client-tls13-filetransfer -I${CMAKE_SOURCE_DIR}/__repo__/modules/crypto/wolfssl -L${CMAKE_SOURCE_DIR}/__repo__/modules/crypto/wolfssl/src/.libs -lwolfssl
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    COMMENT "Building client-tls13-filetransfer application"
+    DEPENDS ${CMAKE_SOURCE_DIR}/client-tls13-filetransfer.c
 )

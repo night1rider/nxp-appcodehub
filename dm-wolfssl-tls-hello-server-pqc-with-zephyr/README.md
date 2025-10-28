@@ -88,15 +88,27 @@ The project should be called `dm-wolfssl-tls-hello-server-with-zephyr`.
 
     [<img src="Images/Setup3-4.png" width="300"/>](Images/Setup3-4.png)
 
-4. In a terminal, build wolfSSL with ML-KEM and ML-DSA enabled and then build and execute the `client-tls13-filetransfer` application. The source code for `client-tls13-filetransfer.c` and the required pem files are in the same directory as this README.md file.
+4. Run the `client-tls13-filetransfer` application. The client application is automatically built when you build the Zephyr server application using CMake. The source code for `client-tls13-filetransfer.c` and the required pem files are in the same directory as this README.md file.
 
-```
-./configure --enable-mlkem --enable-dilithium
-make all
-client-tls13-filetransfer.c -o client-tls13-filetransfer -I. -Lsrc/.libs -lwolfssl
-LD_LIBRARY_PATH=src/.libs ./client-tls13-filetransfer  1.1.1.5 mldsa44_entity_cert.pem  mldsa44_entity_key.pem
+   **Option 1: Using the convenience script (recommended)**
+   ```bash
+   ./run-client.sh 1.1.1.5 mldsa44_entity_cert.pem mldsa44_entity_key.pem
+   ```
 
-```
+   **Option 2: Manual execution**
+   ```bash
+   LD_LIBRARY_PATH=__repo__/modules/crypto/wolfssl/src/.libs ./client-tls13-filetransfer 1.1.1.5 mldsa44_entity_cert.pem mldsa44_entity_key.pem
+   ```
+
+   **Note:** The CMake build system automatically:
+   - Builds wolfSSL with ML-KEM and ML-DSA support enabled
+   - Compiles the `client-tls13-filetransfer` application
+   - Links it against the built wolfSSL library
+
+   If you need to rebuild just the client application manually, you can use:
+   ```bash
+   gcc client-tls13-filetransfer.c -o client-tls13-filetransfer -I__repo__/modules/crypto/wolfssl -L__repo__/modules/crypto/wolfssl/src/.libs -lwolfssl
+   ```
 
 ## 4. FAQs<a name="step4"></a>
 No FAQs have been identified for this project.

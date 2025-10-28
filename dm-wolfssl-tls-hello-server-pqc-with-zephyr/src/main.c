@@ -21,6 +21,7 @@
 
 /* wolfSSL Includes Start */
 #include "user_settings.h"      /* For wolfSSL Zephyr configuration */
+#include <wolfssl/wolfcrypt/settings.h>
 #include <wolfssl/ssl.h>        /* Basic functionality for TLS */
 #include <wolfssl/certs_test.h> /* Needed for Cert Buffers */
 #include <wolfssl/wolfcrypt/hash.h>
