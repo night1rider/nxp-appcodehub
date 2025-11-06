@@ -21,10 +21,19 @@
 
 /* wolfSSL Includes Start */
 #include "user_settings.h"      /* For wolfSSL Zephyr configuration */
+#include <wolfssl/wolfcrypt/settings.h>
 #include <wolfssl/ssl.h>        /* Basic functionality for TLS */
 #include <wolfssl/certs_test.h> /* Needed for Cert Buffers */
 #include <wolfssl/wolfcrypt/hash.h>
 /* wolfSSL Includes End */
+
+#ifdef WOLFCRYPT_TEST
+#include <wolfcrypt/test/test.h>
+#endif
+
+#ifdef WOLFCRYPT_BENCHMARK
+#include <wolfcrypt/benchmark/benchmark.h>
+#endif
 
 /* Standard Packages Start */
 #include <stdio.h>
@@ -291,6 +300,15 @@ int main(void)
         return 1;
     }
 
+#ifdef WOLFCRYPT_TEST
+    printf("\nRunning wolfCrypt test\n");
+    wolfcrypt_test(NULL);
+#endif
+
+#ifdef WOLFCRYPT_BENCHMARK
+    printf("\nRunning wolfCrypt benchmark\n");
+    benchmark_test(NULL);
+#endif
 
     if (startServer() != 0){
         printf("Server has Failed!");

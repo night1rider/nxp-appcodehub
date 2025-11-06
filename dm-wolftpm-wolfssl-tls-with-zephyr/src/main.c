@@ -21,6 +21,7 @@
 
 /* wolfSSL Includes Start */
 #include "user_settings.h"      /* For wolfssl zephyr configuration */
+#include <wolfssl/wolfcrypt/settings.h>
 #include <wolfssl/ssl.h>        /* Basic functionality for TLS */
 #include <wolfssl/certs_test.h> /* Needed for Cert Buffers */
 #include <wolfssl/wolfcrypt/hash.h>
@@ -64,7 +65,7 @@
 #include <zephyr/net/net_mgmt.h>
 #include <zephyr/net/sntp.h>
 #include <zephyr/net/socket.h>
-#include <zephyr/posix/time.h>
+#include <time.h>  /* POSIX time.h - provided by CONFIG_POSIX_API */
 #include <zephyr/storage/disk_access.h>
 #include <zephyr/sys/timeutil.h>
 /* Zephyr Includes End */

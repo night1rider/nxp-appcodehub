@@ -43,6 +43,15 @@ extern "C" {
 //#define WOLFSSL_LWIP_NATIVE
 //#define FREERTOS_TCP
 
+#define WOLFCRYPT_TEST
+#define WOLFCRYPT_BENCHMARK
+#define NO_MAIN_DRIVER
+
+#undef NO_FILESYSTEM
+#define NO_FILESYSTEM
+#define WOLFMQTT_V5
+#define ENABLE_MQTT_TLS
+
 /* RTOS */
 /* Default is POSIX mutex and pthreads*/
 //#define SINGLE_THREADED
@@ -234,7 +243,7 @@ extern "C" {
 #endif
 
 /* SHA-3 */
-#if 1
+#if 0
     #define WOLFSSL_SHA3
 #endif
 
