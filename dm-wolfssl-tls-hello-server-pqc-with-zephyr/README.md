@@ -83,6 +83,28 @@ The board target can be specified under the **PROJECTS** view.
 
 The project should be called `dm-wolfssl-tls-hello-server-pqc-with-zephyr`.
 
+4. For the full experience on Linux and MacOS, paste the following to the end of the CMakeLists.txt file:
+
+```
+# Build wolfSSL with ML-KEM and ML-DSA support, then build the client application
+add_custom_command(
+    TARGET app POST_BUILD
+    COMMAND cd ../__repo__/modules/crypto/wolfssl && ./autogen.sh && ./configure --enable-mlkem --enable-dilithium && make
+    COMMENT "Building wolfSSL with ML-KEM and ML-DSA support"
+)
+
+# Build the client-tls13-filetransfer application
+add_custom_command(
+    TARGET app POST_BUILD
+    COMMAND gcc ${CMAKE_SOURCE_DIR}/client-tls13-filetransfer.c -o ${CMAKE_SOURCE_DIR}/client-tls13-filetransfer -I${CMAKE_SOURCE_DIR}/__repo__/modules/crypto/wolfssl -L${CMAKE_SOURCE_DIR}/__repo__/modules/crypto/wolfssl/src/.libs -lwolfssl
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    COMMENT "Building client-tls13-filetransfer application"
+    DEPENDS ${CMAKE_SOURCE_DIR}/client-tls13-filetransfer.c
+)
+```
+
+Windows support is coming soon.
+
 ### 3.2 Connect Hardware
 1. Connect the FRDM-MCXN947 to your computer with the provided USB-C Cable
 
