@@ -68,11 +68,20 @@ It starts with running our benchmarks for the wolfCrypt library and getting pefo
 
 ### 3.1 Import the Project and Build
 1. Follow section 1: `Setup` in the top level [README](../README.md)
-2. Under the "Projects" tab, right click the project and choose "build selected", this should result in no errors. 
+
+2. The Zephyr project import requires the user to select the board target.
+The board target can be specified under the **PROJECTS** view.
+- Expand the project information
+- Click **Build Configurations**
+- Click **debug Default**
+- Click the *pencil* icon to the right of the debug configuration
+- Type **MCXN9** in the Board and select the *NXP FRDM_MCXN947
+- Click **Save**
+3. Under the "Projects" tab, right click the project and choose "build selected", this should result in no errors.
 
 [<img src="Images/Setup3-3.png" width="300"/>](Images/Setup3-3.png)
 
-The project should be called `dm-wolfssl-tls-hello-server-with-zephyr`.
+The project should be called `dm-wolfssl-tls-hello-server-pqc-with-zephyr`.
 
 ### 3.2 Connect Hardware
 1. Connect the FRDM-MCXN947 to your computer with the provided USB-C Cable
