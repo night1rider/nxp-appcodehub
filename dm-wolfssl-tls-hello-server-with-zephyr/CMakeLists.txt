@@ -19,10 +19,3 @@ target_include_directories(app PRIVATE src)
 add_definitions(-DWOLFSSL_USER_SETTINGS)
 
 
-# Check if the command is executed by redirecting output to a file (Unix-like systems)
-add_custom_command(
-    TARGET app POST_BUILD
-    COMMAND cd ../__repo__/modules/crypto/wolfssl && ./autogen.sh && ./configure && make
-    COMMENT "Echoing HELLO_WORLD after building the app target"
-)
-

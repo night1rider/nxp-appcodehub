@@ -73,6 +73,17 @@ Creating a simple server using the Zephyr RTOS and wolfSSL to utilize the networ
 [<img src="Images/Setup3-3.png" width="300"/>](Images/Setup3-3.png)
 
 The project should be called `dm-wolfssl-tls-hello-server-with-zephyr`.
+3. For the full experience on Linux and MacOS, paste the following to the end of the CMakeLists.txt file:
+```
+# Check if the command is executed by redirecting output to a file (Unix-like systems)
+add_custom_command(
+    TARGET app POST_BUILD
+    COMMAND cd ../__repo__/modules/crypto/wolfssl && ./autogen.sh && ./configure && make
+    COMMENT "Echoing HELLO_WORLD after building the app target"
+)
+```
+
+Windows support is coming soon.
 
 ### 3.2 Connect Hardware
 1. Connect the FRDM-MCXN947 to your computer with the provided USB-C Cable
